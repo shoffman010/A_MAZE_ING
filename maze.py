@@ -1,4 +1,5 @@
 from cell import Cell
+from position import Position
 
 
 class Maze:
@@ -27,6 +28,13 @@ class Maze:
             for _ in range(rows)
         ]
 
+    def valid_cell(self, row: int, col: int) -> bool:
+        return (
+            0 <= row < self.rows
+            and
+            0 <= col < self.cols
+        )
+
     def get_cell(self, row: int, col: int) -> Cell:
         return self.grid[row][col]
     
@@ -51,3 +59,21 @@ class Maze:
             current.south = False
             neighbor.north = False
     
+
+    def get_neighbors(self, row, col) -> list[Position]:
+        
+        neighbors: list[Position] = []
+
+        adjust_position = [
+            (-1, 0),
+            (1, 0),
+            (0, -1),
+            (0, 1)
+        ]
+        for adjust_row, adjust_col in adjust_position:
+            new_row = row  + adjust_row
+            new_col = col + adjust_col
+            if self.valid_cell(new_row, new_col):
+                neighbors.append(Position(row = new_row, col = new_col))
+
+            return neighbors
