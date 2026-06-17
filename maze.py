@@ -60,7 +60,7 @@ class Maze:
             neighbor.north = False
     
 
-    def get_neighbors(self, row, col) -> list[Position]:
+    def get_neighbors(self, row: int, col: int) -> list[Position]:
         
         neighbors: list[Position] = []
 
@@ -77,3 +77,7 @@ class Maze:
                 neighbors.append(Position(row = new_row, col = new_col))
 
             return neighbors
+
+
+    def get_not_visited_neighbors(self, row: int, col: int) -> list[Position]:
+        pass
