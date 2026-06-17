@@ -3,7 +3,7 @@ class Renderer:
     def render(self, maze: Maze) -> None:
         for row in maze.grid:
             for _ in row:
-                print("[ ]", end=" ")
+                print("#", end=" ")
             print()
         
         
@@ -12,3 +12,4 @@ class Renderer:
         for row in maze.grid:
             line = "".join(cell.hex_value for cell in row)
             print(line)
+
