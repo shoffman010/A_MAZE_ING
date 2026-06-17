@@ -5,9 +5,7 @@ from dataclasses import dataclass
 class Config:
     width: int
     height: int
-    entry_x: int
-    entry_y: int
-    exit_x: int
-    exit_y: int
+    entry: tuple[int, int]
+    exit: tuple[int, int]
     perfect: bool
     output_file: str
