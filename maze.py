@@ -29,3 +29,5 @@ class Maze:
 
     def get_cell(self, row: int, col: int) -> Cell:
         return self.grid[row][col]
+    
+    
