@@ -30,4 +30,24 @@ class Maze:
     def get_cell(self, row: int, col: int) -> Cell:
         return self.grid[row][col]
     
+    def remove_wall(self,
+                    current_row: int,
+                    current_col: int,
+                    next_row: int,
+                    next_col: int) -> None:
+        current = self.grid[current_row][current_col]
+        neighbor = self.grid[next_row][next_col]
+
+        if next_col == current_col - 1:
+            neighbor.east = False
+            current.west = False
+        elif next_row == current_row - 1:
+            neighbor.south = False
+            current.north = False
+        elif next_col == current_col + 1:
+            neighbor.west = False
+            current.east = False
+        elif next_row == current_row + 1:
+            current.south = False
+            neighbor.north = False
     

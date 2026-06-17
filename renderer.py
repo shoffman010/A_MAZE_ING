@@ -13,7 +13,7 @@ class Renderer:
     def render(self, maze: Maze) -> None:
         for row in maze.grid:
             for _ in row:
-                print("#", end=" ")
+                print("", end=" ")
             print()
         
         
