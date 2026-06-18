@@ -1,26 +1,4 @@
 from maze import Maze
-# class Renderer:
-#     OUT_TOP_LEFT = "╔"
-#     OUT_TOP_RIGHT = "╗"
-#     OUT_BOTTOM_LEFT = "╚"
-#     OUT_BOTTOM_RIGHT = "╝"
-#     OUT_VERTICAL = "║"
-#     OUT_HORIZONTAL = "═"
-
-#     IN_VERTICAL = "│"
-#     IN_HORIZONTAL = "─"
-    
-#     # def render(self, maze: Maze) -> None:
-#     #     for row in maze.grid:
-#     #         for _ in row:
-                
-        
-        
-#         print()
-#         print("==================Hex Value =================")
-#         for row in maze.grid:
-#             line = "".join(cell.hex_value for cell in row)
-#             print(line)
 
 
 class Renderer:
@@ -38,13 +16,8 @@ class Renderer:
 
         self._carve_maze(canvas, maze)
         self._draw_42_pattern(canvas, maze)
-
-        # Optional, only if these attributes exist on your Maze.
-        if hasattr(maze, "entry"):
-            self._draw_cell_marker(canvas, maze.entry, self.ENTRY)
-
-        if hasattr(maze, "exit"):
-            self._draw_cell_marker(canvas, maze.exit, self.EXIT)
+        self._draw_cell_marker(canvas, maze.entry, self.ENTRY)
+        self._draw_cell_marker(canvas, maze.exit, self.EXIT)
 
         for row in canvas:
             print("".join(row))

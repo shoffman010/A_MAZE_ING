@@ -16,10 +16,9 @@ def main() -> int:
         maze = Maze(
             config.height,
             config.width,
-            entry=_to_maze_position(config.entry),
-            exit=_to_maze_position(config.exit),
+            entry=config.entry,
+            exit=config.exit,
         )
-        breakpoint()
     except (OSError, ValueError) as exc:
         print(f"Error: {exc}", file=sys.stderr)
         return 1
@@ -27,11 +26,6 @@ def main() -> int:
     renderer = Renderer()
     renderer.render(maze)
     return 0
-
-
-def _to_maze_position(position: tuple[int, int]) -> tuple[int, int]:
-    x, y = position
-    return y, x
 
 
 if __name__ == "__main__":

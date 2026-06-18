@@ -65,16 +65,13 @@ def load_config(path: str) -> Config:
 
     width = _parse_positive_int(values["WIDTH"], "WIDTH")
     height = _parse_positive_int(values["HEIGHT"], "HEIGHT")
-    entry = _parse_coordinates(values["ENTRY"], "ENTRY")
-    exit = _parse_coordinates(values["EXIT"], "EXIT")
+    entry = _parse_maze_position(values["ENTRY"], width, height, "ENTRY")
+    exit = _parse_maze_position(values["EXIT"], width, height, "EXIT")
     perfect = _parse_bool(values["PERFECT"], "PERFECT")
     output_file = values["OUTPUT_FILE"]
 
     if not output_file:
         raise ValueError("OUTPUT_FILE cannot be empty")
-
-    _validate_coordinates(entry, width, height, "ENTRY")
-    _validate_coordinates(exit, width, height, "EXIT")
 
     if entry == exit:
         raise ValueError("ENTRY and EXIT must be different coordinates")
@@ -101,12 +98,23 @@ def _parse_positive_int(value: str, key: str) -> int:
     return number
 
 
-def _parse_coordinates(value: str, key: str) -> tuple[int, int]:
+def _parse_maze_position(
+    value: str,
+    width: int,
+    height: int,
+    key: str,
+) -> tuple[int, int]:
     coordinate_match = COORDINATE_PATTERN.fullmatch(value)
     if coordinate_match is None:
         raise ValueError(f"{key} must use x,y coordinates")
 
-    return int(coordinate_match.group("x")), int(coordinate_match.group("y"))
+    x = int(coordinate_match.group("x"))
+    y = int(coordinate_match.group("y"))
+
+    if not (0 <= x < width and 0 <= y < height):
+        raise ValueError(f"{key} must be inside the maze bounds")
+
+    return y, x
 
 
 def _parse_bool(value: str, key: str) -> bool:
@@ -116,13 +124,3 @@ def _parse_bool(value: str, key: str) -> bool:
 
     return boolean_match.group("value") == "True"
 
-
-def _validate_coordinates(
-    position: tuple[int, int],
-    width: int,
-    height: int,
-    key: str,
-) -> None:
-    x, y = position
-    if not (0 <= x < width and 0 <= y < height):
-        raise ValueError(f"{key} must be inside the maze bounds")
