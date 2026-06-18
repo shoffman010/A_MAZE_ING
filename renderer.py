@@ -27,16 +27,17 @@ class Renderer:
     WALL = "██"
     EMPTY = "  "
 
-    ENTRY = "EE"
-    EXIT = "XX"
-    PATH = ".."
-    PATTERN = "42"
+    ENTRY = "\033[92mEN\033[0m"
+    EXIT = "\033[91mEX\033[0m"
+    PATH = "\033[93m..\033[0m"
+    PATTERN = "\033[96m██\033[0m"
 
     def render(self, maze: Maze) -> None:
         """Print a block-style terminal representation of the maze."""
         canvas = self._create_wall_canvas(maze)
 
         self._carve_maze(canvas, maze)
+        self._draw_42_pattern(canvas, maze)
 
         # Optional, only if these attributes exist on your Maze.
         if hasattr(maze, "entry"):
@@ -69,7 +70,7 @@ class Renderer:
 
                 # If this cell belongs to your closed 42 pattern,
                 # do not carve it open.
-                if getattr(cell, "is_pattern", False):
+                if cell.locked_42:
                     continue
 
                 # Carve the cell center.
@@ -98,3 +99,23 @@ class Renderer:
         canvas_row = row * 2 + 1
         canvas_col = col * 2 + 1
         canvas[canvas_row][canvas_col] = marker
+
+    def _draw_42_pattern(
+        self,
+        canvas: list[list[str]],
+        maze: Maze,
+    ) -> None:
+        for row_index, row in enumerate(maze.grid):
+            for col_index, cell in enumerate(row):
+                if not cell.locked_42:
+                    continue
+
+                canvas_row = row_index * 2 + 1
+                canvas_col = col_index * 2 + 1
+                canvas[canvas_row][canvas_col] = self.PATTERN
+
+                if row_index > 0 and maze.grid[row_index - 1][col_index].locked_42:
+                    canvas[canvas_row - 1][canvas_col] = self.PATTERN
+
+                if col_index > 0 and maze.grid[row_index][col_index - 1].locked_42:
+                    canvas[canvas_row][canvas_col - 1] = self.PATTERN

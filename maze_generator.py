@@ -7,8 +7,8 @@ class MazeGenerator:
 
         for position in maze.get_neighbors(row, col):
             cell = maze.grid[position.row][position.col]
-            if not cell.visited:
-                neighbors.add(position)
+            if not cell.visited and not cell.locked_42:
+                neighbors.append(position)
         return neighbors
     
 # Creating 42 in the middle of the maze. Size maybe also varies depending on total maze size?
