@@ -15,8 +15,8 @@ class Maze:
         self,
         rows: int,
         cols: int,
-        entry: tuple[int, int] | None = None,
-        exit: tuple[int, int] | None = None,
+        entry: Position | None = None,
+        exit: Position | None = None,
     ):
         self.rows = rows
         self.cols = cols
@@ -27,44 +27,45 @@ class Maze:
         ]
 
         self._lock_42_pattern()
-        self.entry = self._validated_marker(entry, (0, 0), "entry")
-        self.exit = self._validated_marker(exit, (rows - 1, cols - 1), "exit")
+        self.entry = self._validated_marker(entry, Position(0, 0), "entry")
+        self.exit = self._validated_marker(exit, Position(rows - 1, cols - 1), "exit")
 
         if self.entry == self.exit:
             raise ValueError("entry and exit must be different cells")
 
-    def valid_cell(self, row: int, col: int) -> bool:
+    def _valid_cell(self, position: Position) -> bool:
         return (
-            0 <= row < self.rows
+            0 <= position.row < self.rows
             and
-            0 <= col < self.cols
+            0 <= position.col < self.cols
         )
 
-    def get_cell(self, row: int, col: int) -> Cell:
-        return self.grid[row][col]
+    def _get_cell(self, position: Position) -> Cell:
+        return self.grid[position.row][position.col]
 
-    def remove_wall(self,
-                    current_row: int,
-                    current_col: int,
-                    next_row: int,
-                    next_col: int) -> None:
-        current = self.grid[current_row][current_col]
-        neighbor = self.grid[next_row][next_col]
+    def _remove_wall(self,
+                    current: Position,
+                    neighbor: Position) -> None:
+        current_cell = self.grid[current.row][current.col]
+        neighbor_cell = self.grid[neighbor.row][neighbor.col]
 
-        if next_col == current_col - 1:
-            neighbor.east = False
-            current.west = False
-        elif next_row == current_row - 1:
-            neighbor.south = False
-            current.north = False
-        elif next_col == current_col + 1:
-            neighbor.west = False
-            current.east = False
-        elif next_row == current_row + 1:
-            current.south = False
-            neighbor.north = False
+        if neighbor.col == current.col - 1:
+            neighbor_cell.east = False
+            current_cell.west = False
 
-    def get_neighbors(self, row: int, col: int) -> list[Position]:
+        elif neighbor.row == current.row - 1:
+            neighbor_cell.south = False
+            current_cell.north = False
+
+        elif neighbor.col == current.col + 1:
+            neighbor_cell.west = False
+            current_cell.east = False
+
+        elif neighbor.row == current.row + 1:
+            current_cell.south = False
+            neighbor_cell.north = False
+
+    def _get_neighbors(self, position: Position) -> list[Position]:
 
         neighbors: list[Position] = []
 
@@ -75,22 +76,28 @@ class Maze:
             (0, 1)
         ]
         for adjust_row, adjust_col in adjust_position:
-            new_row = row + adjust_row
-            new_col = col + adjust_col
-            if self.valid_cell(new_row, new_col):
-                neighbors.append(Position(row=new_row, col=new_col))
+            new_row = position.row + adjust_row
+            new_col = position.col + adjust_col
+            new_neighbor = Position(new_row, new_col)
+            if self._valid_cell(new_neighbor):
+                neighbors.append(new_neighbor)
 
         return neighbors
-
+    
     def _lock_42_pattern(self) -> None:
-        pattern_cells = self._scaled_42_pattern()
+        pattern_height = len(self.PATTERN_42)
+        pattern_width = max(len(row) for row in self.PATTERN_42)
 
-        pattern_height = len(pattern_cells)
-        pattern_width = len(pattern_cells[0])
+        if self.rows < pattern_height or self.cols < pattern_width:
+            raise ValueError(
+                "maze is too small for the 42 pattern: "
+                f"minimum size is {pattern_width}x{pattern_height}"
+            )
+
         start_row = (self.rows - pattern_height) // 2
         start_col = (self.cols - pattern_width) // 2
 
-        for pattern_row, line in enumerate(pattern_cells):
+        for pattern_row, line in enumerate(self.PATTERN_42):
             for pattern_col, mark in enumerate(line):
                 if mark != "#":
                     continue
@@ -99,43 +106,60 @@ class Maze:
                 col = start_col + pattern_col
                 self.grid[row][col].locked_42 = True
 
-    def _scaled_42_pattern(self) -> tuple[str, ...]:
-        base_height = len(self.PATTERN_42)
-        base_width = max(len(row) for row in self.PATTERN_42)
+    # def _lock_42_pattern(self) -> None:
+    #     pattern_cells = self._scaled_42_pattern()
 
-        if self.rows < base_height or self.cols < base_width:
-            raise ValueError(
-                "maze is too small for the 42 pattern: "
-                f"minimum size is {base_width}x{base_height}"
-            )
+    #     pattern_height = len(pattern_cells)
+    #     pattern_width = len(pattern_cells[0])
+    #     start_row = (self.rows - pattern_height) // 2
+    #     start_col = (self.cols - pattern_width) // 2
 
-        row_margin = 2 if self.rows > base_height + 2 else 0
-        col_margin = 2 if self.cols > base_width + 2 else 0
-        scale = min(
-            max(1, (self.rows - row_margin) // base_height),
-            max(1, (self.cols - col_margin) // base_width),
-        )
+    #     for pattern_row, line in enumerate(pattern_cells):
+    #         for pattern_col, mark in enumerate(line):
+    #             if mark != "#":
+    #                 continue
 
-        scaled_rows: list[str] = []
-        for row in self.PATTERN_42:
-            padded_row = row.ljust(base_width)
-            scaled_row = "".join(mark * scale for mark in padded_row)
-            scaled_rows.extend([scaled_row] * scale)
+    #             row = start_row + pattern_row
+    #             col = start_col + pattern_col
+    #             self.grid[row][col].locked_42 = True
 
-        return tuple(scaled_rows)
+    # def _scaled_42_pattern(self) -> tuple[str, ...]:
+    #     base_height = len(self.PATTERN_42)
+    #     base_width = max(len(row) for row in self.PATTERN_42)
+
+    #     if self.rows < base_height or self.cols < base_width:
+    #         raise ValueError(
+    #             "maze is too small for the 42 pattern: "
+    #             f"minimum size is {base_width}x{base_height}"
+    #         )
+
+    #     row_margin = 2 if self.rows > base_height + 2 else 0
+    #     col_margin = 2 if self.cols > base_width + 2 else 0
+    #     scale = min(
+    #         max(1, (self.rows - row_margin) // base_height),
+    #         max(1, (self.cols - col_margin) // base_width),
+    #     )
+
+    #     scaled_rows: list[str] = []
+    #     for row in self.PATTERN_42:
+    #         padded_row = row.ljust(base_width)
+    #         scaled_row = "".join(mark * scale for mark in padded_row)
+    #         scaled_rows.extend([scaled_row] * scale)
+
+    #     return tuple(scaled_rows)
 
     def _validated_marker(
         self,
-        position: tuple[int, int] | None,
-        default: tuple[int, int],
+        position: Position | None,
+        default: Position,
         name: str,
-    ) -> tuple[int, int]:
-        row, col = position if position is not None else default
+    ) -> Position:
+        marker_position = position if position is not None else default
 
-        if not self.valid_cell(row, col):
+        if not self._valid_cell(marker_position):
             raise ValueError(f"{name} must be inside the maze")
 
-        if self.grid[row][col].locked_42:
+        if self.grid[marker_position.row][marker_position.col].locked_42:
             raise ValueError(f"{name} cannot be inside the 42 pattern")
 
-        return row, col
+        return marker_position

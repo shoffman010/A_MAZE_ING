@@ -1,5 +1,5 @@
 from maze import Maze
-
+from position import Position
 
 class Renderer:
     WALL = "██"
@@ -10,7 +10,7 @@ class Renderer:
     PATH = "\033[93m..\033[0m"
     PATTERN = "\033[96m██\033[0m"
 
-    def render(self, maze: Maze) -> None:
+    def render(self, maze: Maze,) -> None:
         """Print a block-style terminal representation of the maze."""
         canvas = self._create_wall_canvas(maze)
 
@@ -61,12 +61,12 @@ class Renderer:
     def _draw_cell_marker(
         self,
         canvas: list[list[str]],
-        position: tuple[int, int],
+        position: Position,
         marker: str,
     ) -> None:
-        row, col = position
-        canvas_row = row * 2 + 1
-        canvas_col = col * 2 + 1
+        # row, col = position
+        canvas_row = position.row * 2 + 1
+        canvas_col = position.col * 2 + 1
         canvas[canvas_row][canvas_col] = marker
 
     def _draw_42_pattern(

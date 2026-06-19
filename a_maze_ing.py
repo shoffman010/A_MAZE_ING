@@ -3,6 +3,8 @@ import sys
 from config import load_config
 from maze import Maze
 from renderer import Renderer
+from position import Position
+from maze_generator import MazeGenerator
 
 
 def main() -> int:
@@ -16,13 +18,16 @@ def main() -> int:
         maze = Maze(
             config.height,
             config.width,
-            entry=config.entry,
-            exit=config.exit,
+            entry=Position(*config.entry),
+            exit=Position(*config.exit),
         )
         print(config)
     except (OSError, ValueError) as e:
         print(f"Error: {e}", file=sys.stderr)
         return 1
+
+    generator = MazeGenerator()
+    generator.generate(maze)
 
     renderer = Renderer()
     renderer.render(maze)
