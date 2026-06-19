@@ -87,8 +87,10 @@ class Renderer:
                 canvas_col = col_index * 2 + 1
                 canvas[canvas_row][canvas_col] = self.PATTERN
 
-                if row_index > 0 and maze.grid[row_index - 1][col_index].locked_42:
+                if row_index > 0 and\
+                        maze.grid[row_index - 1][col_index].locked_42:
                     canvas[canvas_row - 1][canvas_col] = self.PATTERN
 
-                if col_index > 0 and maze.grid[row_index][col_index - 1].locked_42:
+                if col_index > 0 and\
+                        maze.grid[row_index][col_index - 1].locked_42:
                     canvas[canvas_row][canvas_col - 1] = self.PATTERN

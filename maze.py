@@ -3,21 +3,13 @@ from position import Position
 
 
 class Maze:
-    PATTERN_42: tuple[str] = (
+    PATTERN_42: tuple[str, ...] = (
         "# # ###",
         "# #   #",
         "### ###",
         "  # #  ",
         "  # ###",
     )
-
-    # Print the Grid, height x width
-    #row = 0 and col = 0 = north + west Outer boarder
-    #row = 0 and col = max north + east Outer boarder
-    #row = max col = 0 = south + west Outer boarder
-    #row = max col = max = south + east Outer boarder
-    #all the above cannot be touched, or changed. could be tuples or somehow else not accessible
-    #Then initialize to all true for the whole inner grid, later we remove the walls when we use DFS\
 
     def __init__(
         self,
@@ -50,7 +42,7 @@ class Maze:
 
     def get_cell(self, row: int, col: int) -> Cell:
         return self.grid[row][col]
-    
+
     def remove_wall(self,
                     current_row: int,
                     current_col: int,
@@ -71,10 +63,9 @@ class Maze:
         elif next_row == current_row + 1:
             current.south = False
             neighbor.north = False
-    
 
     def get_neighbors(self, row: int, col: int) -> list[Position]:
-        
+
         neighbors: list[Position] = []
 
         adjust_position = [
@@ -84,10 +75,10 @@ class Maze:
             (0, 1)
         ]
         for adjust_row, adjust_col in adjust_position:
-            new_row = row  + adjust_row
+            new_row = row + adjust_row
             new_col = col + adjust_col
             if self.valid_cell(new_row, new_col):
-                neighbors.append(Position(row = new_row, col = new_col))
+                neighbors.append(Position(row=new_row, col=new_col))
 
         return neighbors
 
