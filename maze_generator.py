@@ -12,8 +12,8 @@ class MazeGenerator:
     ) -> list[Position]:
         neighbors: list[Position] = []
 
-        for neighbor in maze._get_neighbors(position):
-            cell = maze._get_cell(neighbor)
+        for neighbor in maze.get_neighbors(position):
+            cell = maze.get_cell(neighbor)
             if not cell.visited and not cell.locked_42:
                 neighbors.append(neighbor)
         return neighbors
@@ -23,7 +23,7 @@ class MazeGenerator:
     self,
     maze: Maze,
     position: Position, ) -> None:
-        current = maze._get_cell(position)
+        current = maze.get_cell(position)
 
         current.visited = True
 
@@ -36,10 +36,10 @@ class MazeGenerator:
 
         for neighbor in neighbors:
 
-            if maze._get_cell(neighbor).visited:
+            if maze.get_cell(neighbor).visited:
                 continue
 
-            maze._remove_wall(
+            maze.remove_wall(
                 position,
                 neighbor,
             )

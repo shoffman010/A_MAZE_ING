@@ -33,17 +33,17 @@ class Maze:
         if self.entry == self.exit:
             raise ValueError("entry and exit must be different cells")
 
-    def _valid_cell(self, position: Position) -> bool:
+    def valid_cell(self, position: Position) -> bool:
         return (
             0 <= position.row < self.rows
             and
             0 <= position.col < self.cols
         )
 
-    def _get_cell(self, position: Position) -> Cell:
+    def get_cell(self, position: Position) -> Cell:
         return self.grid[position.row][position.col]
 
-    def _remove_wall(self,
+    def remove_wall(self,
                     current: Position,
                     neighbor: Position) -> None:
         current_cell = self.grid[current.row][current.col]
@@ -65,7 +65,7 @@ class Maze:
             current_cell.south = False
             neighbor_cell.north = False
 
-    def _get_neighbors(self, position: Position) -> list[Position]:
+    def get_neighbors(self, position: Position) -> list[Position]:
 
         neighbors: list[Position] = []
 
@@ -79,7 +79,7 @@ class Maze:
             new_row = position.row + adjust_row
             new_col = position.col + adjust_col
             new_neighbor = Position(new_row, new_col)
-            if self._valid_cell(new_neighbor):
+            if self.valid_cell(new_neighbor):
                 neighbors.append(new_neighbor)
 
         return neighbors
@@ -156,7 +156,7 @@ class Maze:
     ) -> Position:
         marker_position = position if position is not None else default
 
-        if not self._valid_cell(marker_position):
+        if not self.valid_cell(marker_position):
             raise ValueError(f"{name} must be inside the maze")
 
         if self.grid[marker_position.row][marker_position.col].locked_42:

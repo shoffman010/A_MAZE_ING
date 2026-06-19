@@ -5,6 +5,7 @@ from maze import Maze
 from renderer import Renderer
 from position import Position
 from maze_generator import MazeGenerator
+from maze_writer import MazeWriter
 
 
 def main() -> int:
@@ -28,6 +29,13 @@ def main() -> int:
 
     generator = MazeGenerator()
     generator.generate(maze)
+
+    writer = MazeWriter()
+
+    writer.write_maze(
+    maze,
+    config.output_file,
+)
 
     renderer = Renderer()
     renderer.render(maze)
