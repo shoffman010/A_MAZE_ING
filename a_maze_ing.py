@@ -19,8 +19,9 @@ def main() -> int:
             entry=config.entry,
             exit=config.exit,
         )
-    except (OSError, ValueError) as exc:
-        print(f"Error: {exc}", file=sys.stderr)
+        print(config)
+    except (OSError, ValueError) as e:
+        print(f"Error: {e}", file=sys.stderr)
         return 1
 
     renderer = Renderer()

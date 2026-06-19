@@ -93,8 +93,6 @@ class Maze:
 
     def _lock_42_pattern(self) -> None:
         pattern_cells = self._scaled_42_pattern()
-        if not pattern_cells:
-            return
 
         pattern_height = len(pattern_cells)
         pattern_width = len(pattern_cells[0])
@@ -115,7 +113,10 @@ class Maze:
         base_width = max(len(row) for row in self.PATTERN_42)
 
         if self.rows < base_height or self.cols < base_width:
-            return ()
+            raise ValueError(
+                "maze is too small for the 42 pattern: "
+                f"minimum size is {base_width}x{base_height}"
+            )
 
         row_margin = 2 if self.rows > base_height + 2 else 0
         col_margin = 2 if self.cols > base_width + 2 else 0

@@ -36,7 +36,7 @@ def load_config(path: str) -> Config:
     """Parse a maze configuration file."""
     values: dict[str, str] = {}
 
-    with open(path, "r", encoding="utf-8") as config_file:
+    with open(path, "r") as config_file:
         for line_number, line in enumerate(config_file, start=1):
             stripped_line = line.strip()
             if not stripped_line or stripped_line.startswith("#"):
@@ -60,7 +60,7 @@ def load_config(path: str) -> Config:
 
     missing_keys = REQUIRED_KEYS - values.keys()
     if missing_keys:
-        missing = ", ".join(sorted(missing_keys))
+        missing = ", ".join(missing_keys)
         raise ValueError(f"missing required config key(s): {missing}")
 
     width = _parse_positive_int(values["WIDTH"], "WIDTH")
@@ -89,8 +89,8 @@ def load_config(path: str) -> Config:
 def _parse_positive_int(value: str, key: str) -> int:
     try:
         number = int(value)
-    except ValueError as exc:
-        raise ValueError(f"{key} must be an integer") from exc
+    except ValueError:
+        raise ValueError(f"{key} must be an integer")
 
     if number <= 0:
         raise ValueError(f"{key} must be greater than 0")
