@@ -123,4 +123,3 @@ def _parse_bool(value: str, key: str) -> bool:
         raise ValueError(f"{key} must be True or False")
 
     return boolean_match.group("value") == "True"
-

@@ -41,15 +41,11 @@ class Renderer:
                 canvas_row = row_index * 2 + 1
                 canvas_col = col_index * 2 + 1
 
-                # If this cell belongs to your closed 42 pattern,
-                # do not carve it open.
                 if cell.locked_42:
                     continue
 
-                # Carve the cell center.
                 canvas[canvas_row][canvas_col] = self.EMPTY
 
-                # Carve passages only when the wall is open.
                 if not cell.north:
                     canvas[canvas_row - 1][canvas_col] = self.EMPTY
 
@@ -87,8 +83,10 @@ class Renderer:
                 canvas_col = col_index * 2 + 1
                 canvas[canvas_row][canvas_col] = self.PATTERN
 
-                if row_index > 0 and maze.grid[row_index - 1][col_index].locked_42:
+                if row_index > 0 and\
+                        maze.grid[row_index - 1][col_index].locked_42:
                     canvas[canvas_row - 1][canvas_col] = self.PATTERN
 
-                if col_index > 0 and maze.grid[row_index][col_index - 1].locked_42:
+                if col_index > 0 and\
+                        maze.grid[row_index][col_index - 1].locked_42:
                     canvas[canvas_row][canvas_col - 1] = self.PATTERN
