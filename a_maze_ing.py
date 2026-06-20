@@ -30,18 +30,18 @@ def main() -> int:
 
     generator = MazeGenerator()
     generator.generate(maze)
-
-    writer = MazeWriter()
-
-    writer.write_maze(
-    maze,
-    config.output_file,)
-
+    
     renderer = Renderer()
     # renderer.render(maze)
 
     solver = MazeSolver()
     path = solver.solve(maze)
+    writer = MazeWriter()
+
+    writer.write_maze(
+    maze,
+    path,
+    config.output_file,)
     renderer.render(maze, path,)
 
 

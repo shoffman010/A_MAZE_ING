@@ -3,7 +3,7 @@ from maze import Maze
 import random
 import sys
 
-sys.setrecursionlimit(5000)
+sys.setrecursionlimit(20000)
 
 class MazeGenerator:
     
