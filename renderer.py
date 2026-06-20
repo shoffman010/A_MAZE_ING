@@ -3,18 +3,65 @@ from position import Position
 
 class Renderer:
     WALL = "██"
+    # WALL = "\033[30m██\033[0m"
     EMPTY = "  "
+    # EMPTY   = "\033[31m  \033[0m"
 
     ENTRY = "\033[92mEN\033[0m"
     EXIT = "\033[91mEX\033[0m"
-    PATH = "\033[93m..\033[0m"
+    PATH = "\033[91m..\033[0m"
     PATTERN = "\033[96m██\033[0m"
 
-    def render(self, maze: Maze,) -> None:
+
+
+    # WALL = "█"
+    # # WALL = "\033[30m██\033[0m"
+    # EMPTY = " "
+    # # EMPTY   = "\033[31m  \033[0m"
+
+    # ENTRY = "\033[92mN\033[0m"
+    # EXIT = "\033[91mX\033[0m"
+    # PATH = "\033[91m.\033[0m"
+    # PATTERN = "\033[96m█\033[0m"
+
+
+    def _draw_path(
+    self,
+    canvas: list[list[str]],
+    path: list[Position],) -> None:
+
+        for index, position in enumerate(path):
+
+            canvas_row = position.row * 2 + 1
+            canvas_col = position.col * 2 + 1
+
+            canvas[canvas_row][canvas_col] = self.PATH
+
+            if index == 0:
+                continue
+
+            previous = path[index - 1]
+
+            previous_row = previous.row * 2 + 1
+            previous_col = previous.col * 2 + 1
+
+            wall_row = (canvas_row + previous_row) // 2
+            wall_col = (canvas_col + previous_col) // 2
+
+            canvas[wall_row][wall_col] = self.PATH
+
+
+    def render(self, maze: Maze, path: list[Position] | None = None,) -> None:
         """Print a block-style terminal representation of the maze."""
         canvas = self._create_wall_canvas(maze)
 
         self._carve_maze(canvas, maze)
+        
+        if path is not None:
+            self._draw_path(
+                canvas,
+                path,
+            )
         self._draw_42_pattern(canvas, maze)
         self._draw_cell_marker(canvas, maze.entry, self.ENTRY)
         self._draw_cell_marker(canvas, maze.exit, self.EXIT)

@@ -1,6 +1,6 @@
 from cell import Cell
 from position import Position
-
+from direction import Direction
 
 class Maze:
     PATTERN_42: tuple[str, ...] = (
@@ -69,21 +69,74 @@ class Maze:
 
         neighbors: list[Position] = []
 
-        adjust_position = [
-            (-1, 0),
-            (1, 0),
-            (0, -1),
-            (0, 1)
-        ]
-        for adjust_row, adjust_col in adjust_position:
-            new_row = position.row + adjust_row
-            new_col = position.col + adjust_col
-            new_neighbor = Position(new_row, new_col)
-            if self.valid_cell(new_neighbor):
+        # adjust_position = [
+        #     (-1, 0),
+        #     (1, 0),
+        #     (0, -1),
+        #     (0, 1)
+        # ]
+        for direction in Direction:
+            new_neighbor = position.move(direction)
+            if self.valid_cell(new_neighbor) and not self.get_cell(new_neighbor).locked_42:
                 neighbors.append(new_neighbor)
 
         return neighbors
     
+    def get_reachable_neighbors(
+    self,
+    position: Position,) -> list[Position]:
+        neighbors: list[Position] = []
+
+        cell = self.get_cell(position)
+
+        if not cell.north:
+
+            neighbor = Position(
+                position.row - 1,
+                position.col,
+            )
+
+            if self.valid_cell(neighbor) and not self.get_cell(neighbor).locked_42:
+                neighbors.append(neighbor)
+
+        if not cell.east:
+
+            neighbor = Position(
+                position.row,
+                position.col + 1,
+            )
+
+            if self.valid_cell(neighbor) and not self.get_cell(neighbor).locked_42:
+                neighbors.append(neighbor)
+
+        if not cell.south:
+
+            neighbor = Position(
+                position.row + 1,
+                position.col,
+            )
+
+            if self.valid_cell(neighbor) and not self.get_cell(neighbor).locked_42:
+                neighbors.append(neighbor)
+
+        if not cell.west:
+
+            neighbor = Position(
+                position.row,
+                position.col - 1,
+            )
+
+            if self.valid_cell(neighbor) and not self.get_cell(neighbor).locked_42:
+                neighbors.append(neighbor)
+
+        return neighbors
+
+    def reset_visited(self) -> None:
+
+        for row in self.grid:
+            for cell in row:
+                cell.visited = False
+        
     def _lock_42_pattern(self) -> None:
         pattern_height = len(self.PATTERN_42)
         pattern_width = max(len(row) for row in self.PATTERN_42)
