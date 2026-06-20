@@ -3,18 +3,36 @@ from position import Position
 from direction import Direction
 
 class Maze:
-    PATTERN_42: tuple[str, ...] = (
+    PATTERNS = {"42": (
         "# # ###",
         "# #   #",
         "### ###",
         "  # #  ",
         "  # ###",
-    )
+    ),
+    "X": (
+        "#   #",
+        " # # ",
+        "  #  ",
+        " # # ",
+        "#   #",
+    ),
+    "Box":
+        (
+            "######",
+            "#    # ",
+            "#    # ",
+            "#    # ",            
+            "######",
+        )
+    
+    }
 
     def __init__(
         self,
         rows: int,
         cols: int,
+        pattern_name: str,
         entry: Position | None = None,
         exit: Position | None = None,
     ):
@@ -25,6 +43,17 @@ class Maze:
             [Cell() for _ in range(cols)]
             for _ in range(rows)
         ]
+        if pattern_name not in self.PATTERNS:
+            valid_patterns = ", ".join(
+                self.PATTERNS.keys()
+            )
+
+            raise ValueError(
+                f"unknown pattern '{pattern_name}'. "
+                f"Valid patterns: {valid_patterns}"
+            )
+
+        self.pattern = self.PATTERNS[pattern_name]
 
         self._lock_42_pattern()
         self.entry = self._validated_marker(entry, Position(0, 0), "entry")
@@ -138,8 +167,8 @@ class Maze:
                 cell.visited = False
         
     def _lock_42_pattern(self) -> None:
-        pattern_height = len(self.PATTERN_42)
-        pattern_width = max(len(row) for row in self.PATTERN_42)
+        pattern_height = len(self.pattern)
+        pattern_width = max(len(row) for row in self.pattern)
 
         if self.rows < pattern_height or self.cols < pattern_width:
             raise ValueError(
@@ -150,7 +179,7 @@ class Maze:
         start_row = (self.rows - pattern_height) // 2
         start_col = (self.cols - pattern_width) // 2
 
-        for pattern_row, line in enumerate(self.PATTERN_42):
+        for pattern_row, line in enumerate(self.pattern):
             for pattern_col, mark in enumerate(line):
                 if mark != "#":
                     continue

@@ -20,6 +20,7 @@ def main() -> int:
         maze = Maze(
             config.height,
             config.width,
+            config.pattern,
             entry=Position(*config.entry),
             exit=Position(*config.exit),
         )

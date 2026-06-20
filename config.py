@@ -10,6 +10,7 @@ class Config:
     exit: tuple[int, int]
     perfect: bool
     output_file: str
+    pattern: str
 
 
 CONFIG_KEYS = (
@@ -19,6 +20,7 @@ CONFIG_KEYS = (
     "EXIT",
     "OUTPUT_FILE",
     "PERFECT",
+    "PATTERN",
 )
 
 KEY_VALUE_PATTERN = re.compile(
@@ -69,6 +71,7 @@ def load_config(path: str) -> Config:
     exit = _parse_maze_position(values["EXIT"], width, height, "EXIT")
     perfect = _parse_bool(values["PERFECT"], "PERFECT")
     output_file = values["OUTPUT_FILE"]
+    pattern = values["PATTERN"]
 
     if not output_file:
         raise ValueError("OUTPUT_FILE cannot be empty")
@@ -83,6 +86,7 @@ def load_config(path: str) -> Config:
         exit=exit,
         perfect=perfect,
         output_file=output_file,
+        pattern=pattern,
     )
 
 
