@@ -2,27 +2,57 @@ from maze import Maze
 from position import Position
 
 class Renderer:
-    WALL = "██"
-    # WALL = "\033[30m██\033[0m"
+    COLOR_CODES = {
+        "BLACK": "90",
+        "RED": "91",
+        "GREEN": "92",
+        "YELLOW": "93",
+        "BLUE": "94",
+        "MAGENTA": "95",
+        "CYAN": "96",
+        "WHITE": "97",
+        "DEFAULT": "",
+    }
+
     EMPTY = "  "
-    # EMPTY   = "\033[31m  \033[0m"
 
     ENTRY = "\033[92mEN\033[0m"
     EXIT = "\033[91mEX\033[0m"
-    PATH = "\033[91m..\033[0m"
-    PATTERN = "\033[96m██\033[0m"
 
+    def __init__(
+        self,
+        wall_color: str = "DEFAULT",
+        path_color: str = "RED",
+        pattern_color: str = "CYAN",
+    ) -> None:
+        self.WALL = self._colorize("██", wall_color)
+        self.PATH = self._colorize("..", path_color)
+        self.PATTERN = self._colorize("██", pattern_color)
 
+    def render(self, maze: Maze, path: list[Position] | None = None,) -> None:
+        """Print the maze, pattern, and markers - overlay the path when provided."""
+        canvas = self._create_wall_canvas(maze)
 
-    # WALL = "█"
-    # # WALL = "\033[30m██\033[0m"
-    # EMPTY = " "
-    # # EMPTY   = "\033[31m  \033[0m"
+        self._carve_maze(canvas, maze)
 
-    # ENTRY = "\033[92mN\033[0m"
-    # EXIT = "\033[91mX\033[0m"
-    # PATH = "\033[91m.\033[0m"
-    # PATTERN = "\033[96m█\033[0m"
+        if path is not None:
+            self._draw_path(
+                canvas,
+                path,
+            )
+        self._draw_42_pattern(canvas, maze)
+        self._draw_cell_marker(canvas, maze.entry, self.ENTRY)
+        self._draw_cell_marker(canvas, maze.exit, self.EXIT)
+
+        for row in canvas:
+            print("".join(row))
+
+    def _colorize(self, text: str, color: str) -> str:
+        color_code = self.COLOR_CODES[color]
+        if not color_code:
+            return text
+
+        return f"\033[{color_code}m{text}\033[0m"
 
 
     def _draw_path(
@@ -50,24 +80,6 @@ class Renderer:
 
             canvas[wall_row][wall_col] = self.PATH
 
-
-    def render(self, maze: Maze, path: list[Position] | None = None,) -> None:
-        """Print a block-style terminal representation of the maze."""
-        canvas = self._create_wall_canvas(maze)
-
-        self._carve_maze(canvas, maze)
-        
-        if path is not None:
-            self._draw_path(
-                canvas,
-                path,
-            )
-        self._draw_42_pattern(canvas, maze)
-        self._draw_cell_marker(canvas, maze.entry, self.ENTRY)
-        self._draw_cell_marker(canvas, maze.exit, self.EXIT)
-
-        for row in canvas:
-            print("".join(row))
 
     def _create_wall_canvas(self, maze: Maze) -> list[list[str]]:
         visual_rows = maze.rows * 2 + 1

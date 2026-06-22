@@ -11,6 +11,10 @@ class Config:
     perfect: bool
     output_file: str
     pattern: str
+    seed: int | None
+    wall_color: str
+    path_color: str
+    pattern_color: str
 
 
 CONFIG_KEYS = (
@@ -21,6 +25,10 @@ CONFIG_KEYS = (
     "OUTPUT_FILE",
     "PERFECT",
     "PATTERN",
+    "SEED",
+    "WALL_COLOR",
+    "PATH_COLOR",
+    "PATTERN_COLOR",
 )
 
 KEY_VALUE_PATTERN = re.compile(
@@ -31,11 +39,23 @@ COORDINATE_PATTERN = re.compile(
 )
 BOOLEAN_PATTERN = re.compile(r"^(?P<value>True|False)$")
 
-REQUIRED_KEYS = set(CONFIG_KEYS)
+REQUIRED_KEYS = set(CONFIG_KEYS) - {"PATTERN"}
+
+COLOR_NAMES = {
+    "BLACK",
+    "RED",
+    "GREEN",
+    "YELLOW",
+    "BLUE",
+    "MAGENTA",
+    "CYAN",
+    "WHITE",
+    "DEFAULT",
+}
 
 
 def load_config(path: str) -> Config:
-    """Parse a maze configuration file."""
+    """Parse and validate a maze configuration file."""
     values: dict[str, str] = {}
 
     with open(path, "r") as config_file:
@@ -71,7 +91,11 @@ def load_config(path: str) -> Config:
     exit = _parse_maze_position(values["EXIT"], width, height, "EXIT")
     perfect = _parse_bool(values["PERFECT"], "PERFECT")
     output_file = values["OUTPUT_FILE"]
-    pattern = values["PATTERN"]
+    pattern = values.get("PATTERN") or "42"
+    seed = _parse_seed(values["SEED"])
+    wall_color = _parse_color(values.get("WALL_COLOR", "DEFAULT"), "WALL_COLOR")
+    path_color = _parse_color(values.get("PATH_COLOR", "RED"), "PATH_COLOR")
+    pattern_color = _parse_color(values.get("PATTERN_COLOR", "CYAN"), "PATTERN_COLOR")
 
     if not output_file:
         raise ValueError("OUTPUT_FILE cannot be empty")
@@ -87,6 +111,10 @@ def load_config(path: str) -> Config:
         perfect=perfect,
         output_file=output_file,
         pattern=pattern,
+        seed=seed,
+        wall_color=wall_color,
+        path_color=path_color,
+        pattern_color=pattern_color,
     )
 
 
@@ -127,3 +155,22 @@ def _parse_bool(value: str, key: str) -> bool:
         raise ValueError(f"{key} must be True or False")
 
     return boolean_match.group("value") == "True"
+
+
+def _parse_seed(value: str) -> int | None:
+    if not value:
+        return None
+
+    try:
+        return int(value)
+    except ValueError:
+        raise ValueError("SEED must be an integer")
+
+
+def _parse_color(value: str, key: str) -> str:
+    color = value.upper()
+    if color not in COLOR_NAMES:
+        available_colors = ", ".join(sorted(COLOR_NAMES))
+        raise ValueError(f"{key} must be one of: {available_colors}")
+
+    return color

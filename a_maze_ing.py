@@ -29,10 +29,14 @@ def main() -> int:
         print(f"Error: {e}", file=sys.stderr)
         return 1
 
-    generator = MazeGenerator()
-    generator.generate(maze)
+    generator = MazeGenerator(seed=config.seed)
+    generator.generate(maze, perfect=config.perfect)
     
-    renderer = Renderer()
+    renderer = Renderer(
+        wall_color=config.wall_color,
+        path_color=config.path_color,
+        pattern_color=config.pattern_color,
+    )
     # renderer.render(maze)
 
     solver = MazeSolver()

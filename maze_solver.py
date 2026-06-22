@@ -6,33 +6,11 @@ from position import Position
 
 class MazeSolver:
 
-    def _reconstruct_path(
-    self,
-    parents: dict[
-        Position,
-        Position | None,
-    ],
-    goal: Position,
-) -> list[Position]:
-
-        path: list[Position] = []
-
-        current: Position | None = goal
-
-        while current is not None:
-
-            path.append(current)
-
-            current = parents[current]
-
-        path.reverse()
-
-        return path
-
     def solve(
         self,
         maze: Maze,
     ) -> list[Position]:
+        """Return the shortest open route from the entry to the exit."""
 
         maze.reset_visited()
 
@@ -55,3 +33,23 @@ class MazeSolver:
                 parents[neighbor] = current_cell
                 cell_queue.append(neighbor)
         return self._reconstruct_path(parents, maze.exit,)
+
+    def _reconstruct_path(
+        self,
+        parents: dict[
+            Position,
+            Position | None,
+        ],
+        goal: Position,
+    ) -> list[Position]:
+        path: list[Position] = []
+
+        current: Position | None = goal
+
+        while current is not None:
+            path.append(current)
+            current = parents[current]
+
+        path.reverse()
+
+        return path
