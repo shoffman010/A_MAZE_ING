@@ -39,7 +39,10 @@ COORDINATE_PATTERN = re.compile(
 )
 BOOLEAN_PATTERN = re.compile(r"^(?P<value>True|False)$")
 
-REQUIRED_KEYS = set(CONFIG_KEYS) - {"PATTERN"}
+REQUIRED_KEYS = set(CONFIG_KEYS) - {"PATTERN","SEED",
+        "WALL_COLOR",
+        "PATH_COLOR",
+        "PATTERN_COLOR",}
 
 COLOR_NAMES = {
     "BLACK",

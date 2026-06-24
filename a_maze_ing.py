@@ -7,6 +7,7 @@ from position import Position
 from maze_generator import MazeGenerator
 from maze_writer import MazeWriter
 from maze_solver import MazeSolver
+from menu_ui import Menu
 
 
 def main() -> int:
@@ -17,38 +18,40 @@ def main() -> int:
 
     try:
         config = load_config(sys.argv[1])
-        maze = Maze(
-            config.height,
-            config.width,
-            config.pattern,
-            entry=Position(*config.entry),
-            exit=Position(*config.exit),
-        )
+        # maze = Maze(
+        #     config.height,
+        #     config.width,
+        #     config.pattern,
+        #     entry=Position(*config.entry),
+        #     exit=Position(*config.exit),
+        # )
         # print(config)
     except (OSError, ValueError) as e:
         print(f"Error: {e}", file=sys.stderr)
         return 1
 
-    generator = MazeGenerator(seed=config.seed)
-    generator.generate(maze, perfect=config.perfect)
+    # generator = MazeGenerator(seed=config.seed)
+    # generator.generate(maze, perfect=config.perfect)
     
-    renderer = Renderer(
-        wall_color=config.wall_color,
-        path_color=config.path_color,
-        pattern_color=config.pattern_color,
-    )
-    # renderer.render(maze)
+    # renderer = Renderer(
+    #     wall_color=config.wall_color,
+    #     path_color=config.path_color,
+    #     pattern_color=config.pattern_color,
+    # )
+    # # renderer.render(maze)
 
-    solver = MazeSolver()
-    path = solver.solve(maze)
-    writer = MazeWriter()
+    # solver = MazeSolver()
+    # path = solver.solve(maze)
+    # writer = MazeWriter()
 
-    writer.write_maze(
-    maze,
-    path,
-    config.output_file,)
-    renderer.render(maze, path,)
+    # writer.write_maze(
+    # maze,
+    # path,
+    # config.output_file,)
+    # renderer.render(maze, path,)
 
+    menu = Menu()
+    menu.run(config)
 
     return 0
 

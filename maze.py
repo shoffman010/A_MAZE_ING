@@ -5,7 +5,8 @@ from direction import Direction
 class Maze:
     """A grid maze with an untouchable, locked pattern."""
 
-    PATTERNS = {"42": (
+    PATTERNS = {
+    "42": (
         "# # ###",
         "# #   #",
         "### ###",
