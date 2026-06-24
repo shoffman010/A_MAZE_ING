@@ -4,6 +4,25 @@ import re
 
 @dataclass
 class Config:
+    """Hold validated settings used to generate, display, and save a maze.
+
+    Parameters
+    ----------
+    width, height : int
+        Maze dimensions in cells.
+    entry, exit : tuple of int
+        Entry and exit coordinates as ``(row, column)`` pairs.
+    perfect : bool
+        Whether generation must produce a perfect maze.
+    output_file : str
+        Destination path for serialized maze output.
+    pattern : str
+        Name of the protected central pattern.
+    seed : int or None
+        Optional seed for reproducible generation.
+    wall_color, path_color, pattern_color : str
+        ANSI colour names for the rendered maze.
+    """
     width: int
     height: int
     entry: tuple[int, int]
@@ -34,12 +53,16 @@ CONFIG_KEYS = (
 KEY_VALUE_PATTERN = re.compile(
     rf"^\s*(?P<key>{'|'.join(CONFIG_KEYS)})\s*=\s*(?P<value>.*?)\s*$"
 )
-COORDINATE_PATTERN = re.compile(
-    r"^\s*(?P<x>-?\d+)\s*,\s*(?P<y>-?\d+)\s*$"
-)
+COORDINATE_PATTERN = re.compile(r"^\s*(?P<x>-?\d+)\s*,\s*(?P<y>-?\d+)\s*$")
 BOOLEAN_PATTERN = re.compile(r"^(?P<value>True|False)$")
 
-REQUIRED_KEYS = set(CONFIG_KEYS) - {"PATTERN"}
+REQUIRED_KEYS = set(CONFIG_KEYS) - {
+    "PATTERN",
+    "SEED",
+    "WALL_COLOR",
+    "PATH_COLOR",
+    "PATTERN_COLOR",
+}
 
 COLOR_NAMES = {
     "BLACK",
@@ -55,7 +78,26 @@ COLOR_NAMES = {
 
 
 def load_config(path: str) -> Config:
-    """Parse and validate a maze configuration file."""
+    """Parse and validate a maze configuration file.
+
+    Parameters
+    ----------
+    path : str
+        Path to the configuration file.
+
+    Returns
+    -------
+    Config
+        Validated maze settings.
+
+    Raises
+    ------
+    OSError
+        If the file cannot be opened.
+    ValueError
+        If configuration syntax, required values, or value constraints are
+        invalid.
+    """
     values: dict[str, str] = {}
 
     with open(path, "r") as config_file:
@@ -72,7 +114,7 @@ def load_config(path: str) -> Config:
                     f"expected one of {valid_keys}=VALUE"
                 )
 
-            key = key_value_match.group("key")
+            key = key_value_match.group("key").strip()
             value = key_value_match.group("value").strip()
 
             if key in values:
@@ -92,7 +134,7 @@ def load_config(path: str) -> Config:
     perfect = _parse_bool(values["PERFECT"], "PERFECT")
     output_file = values["OUTPUT_FILE"]
     pattern = values.get("PATTERN") or "42"
-    seed = _parse_seed(values["SEED"])
+    seed = _parse_seed(values.get("SEED", ""))
     wall_color = _parse_color(values.get("WALL_COLOR", "DEFAULT"), "WALL_COLOR")
     path_color = _parse_color(values.get("PATH_COLOR", "RED"), "PATH_COLOR")
     pattern_color = _parse_color(values.get("PATTERN_COLOR", "CYAN"), "PATTERN_COLOR")
@@ -119,6 +161,25 @@ def load_config(path: str) -> Config:
 
 
 def _parse_positive_int(value: str, key: str) -> int:
+    """Parse a configuration value as a positive integer.
+
+    Parameters
+    ----------
+    value : str
+        Raw configuration value.
+    key : str
+        Configuration key used in error messages.
+
+    Returns
+    -------
+    int
+        Parsed integer greater than zero.
+
+    Raises
+    ------
+    ValueError
+        If ``value`` is not a positive integer.
+    """
     try:
         number = int(value)
     except ValueError:
@@ -136,6 +197,27 @@ def _parse_maze_position(
     height: int,
     key: str,
 ) -> tuple[int, int]:
+    """Parse an ``x,y`` value and convert it to a ``(row, column)`` pair.
+
+    Parameters
+    ----------
+    value : str
+        Raw coordinate value in ``x,y`` form.
+    width, height : int
+        Maze dimensions used to validate the coordinate.
+    key : str
+        Configuration key used in error messages.
+
+    Returns
+    -------
+    tuple of int
+        Validated coordinate in internal ``(row, column)`` order.
+
+    Raises
+    ------
+    ValueError
+        If the coordinate is malformed or outside the maze.
+    """
     coordinate_match = COORDINATE_PATTERN.fullmatch(value)
     if coordinate_match is None:
         raise ValueError(f"{key} must use x,y coordinates")
@@ -150,6 +232,25 @@ def _parse_maze_position(
 
 
 def _parse_bool(value: str, key: str) -> bool:
+    """Parse an exact ``True`` or ``False`` configuration value.
+
+    Parameters
+    ----------
+    value : str
+        Raw boolean value.
+    key : str
+        Configuration key used in error messages.
+
+    Returns
+    -------
+    bool
+        Parsed boolean value.
+
+    Raises
+    ------
+    ValueError
+        If ``value`` is neither ``True`` nor ``False``.
+    """
     boolean_match = BOOLEAN_PATTERN.fullmatch(value)
     if boolean_match is None:
         raise ValueError(f"{key} must be True or False")
@@ -158,6 +259,23 @@ def _parse_bool(value: str, key: str) -> bool:
 
 
 def _parse_seed(value: str) -> int | None:
+    """Parse an optional integer seed.
+
+    Parameters
+    ----------
+    value : str
+        Raw seed value; an empty value denotes no fixed seed.
+
+    Returns
+    -------
+    int or None
+        Parsed seed, or ``None`` when no seed is provided.
+
+    Raises
+    ------
+    ValueError
+        If a non-empty value is not an integer.
+    """
     if not value:
         return None
 
@@ -168,6 +286,25 @@ def _parse_seed(value: str) -> int | None:
 
 
 def _parse_color(value: str, key: str) -> str:
+    """Validate and normalize a configured ANSI colour name.
+
+    Parameters
+    ----------
+    value : str
+        Raw colour name.
+    key : str
+        Configuration key used in error messages.
+
+    Returns
+    -------
+    str
+        Uppercase colour name accepted by the renderer.
+
+    Raises
+    ------
+    ValueError
+        If the colour is not one of the supported names.
+    """
     color = value.upper()
     if color not in COLOR_NAMES:
         available_colors = ", ".join(sorted(COLOR_NAMES))

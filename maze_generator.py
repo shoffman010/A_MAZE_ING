@@ -6,11 +6,20 @@ from position import Position
 
 sys.setrecursionlimit(20000)
 
+
 class MazeGenerator:
+    """Generate perfect or imperfect mazes while preserving locked cells."""
 
     _MAX_ROOM_SHAPES = ((2, 4), (3, 3), (4, 2))
 
     def __init__(self, seed: int | None = None) -> None:
+        """Initialize a generator with optional reproducible randomness.
+
+        Parameters
+        ----------
+        seed : int or None, optional
+            Seed for random choices. ``None`` uses system-provided randomness.
+        """
         # Random(None) gets fresh system-provided randomness; a numeric seed
         # makes every random choice in this generator reproducible.
         self._random = random.Random(seed)
@@ -20,7 +29,16 @@ class MazeGenerator:
         maze: Maze,
         perfect: bool = True,
     ) -> None:
-        """Carve a maze, adding extra passages when it is imperfect."""
+        """Carve a maze, optionally adding passages to make it imperfect.
+
+        Parameters
+        ----------
+        maze : Maze
+            Initialized maze to carve in place.
+        perfect : bool, default=True
+            If ``True``, produce a single-route maze. If ``False``, add a
+            limited number of extra passages.
+        """
         maze.reset_visited()
         self._dfs(
             maze,
@@ -29,12 +47,24 @@ class MazeGenerator:
 
         if not perfect:
             self._add_imperfections(maze)
-    
+
     def _get_not_visited_neighbors(
-            self,
-            maze: Maze,
-            position: Position
+        self, maze: Maze, position: Position
     ) -> list[Position]:
+        """Return adjacent unlocked cells that have not been visited.
+
+        Parameters
+        ----------
+        maze : Maze
+            Maze containing the cells.
+        position : Position
+            Cell from which to inspect neighbours.
+
+        Returns
+        -------
+        list of Position
+            Unvisited neighbours eligible for depth-first carving.
+        """
         neighbors: list[Position] = []
 
         for neighbor in maze.get_neighbors(position):
@@ -42,12 +72,21 @@ class MazeGenerator:
             if not cell.visited:
                 neighbors.append(neighbor)
         return neighbors
-    
-    
+
     def _dfs(
-    self,
-    maze: Maze,
-    position: Position, ) -> None:
+        self,
+        maze: Maze,
+        position: Position,
+    ) -> None:
+        """Recursively carve a depth-first spanning tree from a cell.
+
+        Parameters
+        ----------
+        maze : Maze
+            Maze to mutate.
+        position : Position
+            Starting cell for this recursive carving step.
+        """
         current = maze.get_cell(position)
 
         current.visited = True
@@ -86,7 +125,22 @@ class MazeGenerator:
         height: int,
         width: int,
     ) -> bool:
-        """Return whether every internal wall in a cell rectangle is open."""
+        """Return whether every internal wall in a cell rectangle is open.
+
+        Parameters
+        ----------
+        maze : Maze
+            Maze to inspect.
+        top, left : int
+            Row and column of the rectangle's top-left cell.
+        height, width : int
+            Rectangle dimensions in cells.
+
+        Returns
+        -------
+        bool
+            ``True`` if the rectangle has no protected cells or internal walls.
+        """
         for row in range(top, top + height):
             for col in range(left, left + width):
                 position = Position(row, col)
@@ -103,7 +157,18 @@ class MazeGenerator:
         return True
 
     def _has_oversized_room(self, maze: Maze) -> bool:
-        """Return whether an open room exceeds the allowed 2x3 or 3x2 size."""
+        """Return whether an open room exceeds the permitted size.
+
+        Parameters
+        ----------
+        maze : Maze
+            Maze to inspect for open rectangular rooms.
+
+        Returns
+        -------
+        bool
+            ``True`` if an open 2x4, 3x3, or 4x2 rectangle exists.
+        """
         for height, width in self._MAX_ROOM_SHAPES:
             for top in range(maze.rows - height + 1):
                 for left in range(maze.cols - width + 1):
@@ -117,7 +182,15 @@ class MazeGenerator:
         current: Position,
         neighbor: Position,
     ) -> None:
-        """Undo a wall removal between two adjacent cells."""
+        """Restore the shared wall between two adjacent cells.
+
+        Parameters
+        ----------
+        maze : Maze
+            Maze to mutate.
+        current, neighbor : Position
+            Orthogonally adjacent cells on either side of the wall.
+        """
         current_cell = maze.get_cell(current)
         neighbor_cell = maze.get_cell(neighbor)
 
@@ -135,7 +208,13 @@ class MazeGenerator:
             neighbor_cell.north = True
 
     def _add_imperfections(self, maze: Maze) -> None:
-        """Open extra passages while keeping open rooms within the size limit."""
+        """Open limited extra passages without creating oversized rooms.
+
+        Parameters
+        ----------
+        maze : Maze
+            Already-carved maze to make imperfect in place.
+        """
         candidates: list[tuple[Position, Position]] = []
 
         for row in range(maze.rows):

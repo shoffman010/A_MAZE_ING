@@ -5,12 +5,24 @@ from position import Position
 
 
 class MazeSolver:
+    """Find routes through carved maze passages."""
 
     def solve(
         self,
         maze: Maze,
     ) -> list[Position]:
-        """Return the shortest open route from the entry to the exit."""
+        """Return the shortest open route from the entry to the exit.
+
+        Parameters
+        ----------
+        maze : Maze
+            Carved maze containing entry and exit markers.
+
+        Returns
+        -------
+        list of Position
+            Positions on the shortest route, ordered from entry to exit.
+        """
 
         maze.reset_visited()
 
@@ -18,7 +30,10 @@ class MazeSolver:
 
         maze.get_cell(maze.entry).visited = True
 
-        parents: dict[Position, Position | None,] = {maze.entry: None}
+        parents: dict[
+            Position,
+            Position | None,
+        ] = {maze.entry: None}
 
         while cell_queue:
             current_cell = cell_queue.popleft()
@@ -32,7 +47,10 @@ class MazeSolver:
                 neighbor_cell.visited = True
                 parents[neighbor] = current_cell
                 cell_queue.append(neighbor)
-        return self._reconstruct_path(parents, maze.exit,)
+        return self._reconstruct_path(
+            parents,
+            maze.exit,
+        )
 
     def _reconstruct_path(
         self,
@@ -42,6 +60,20 @@ class MazeSolver:
         ],
         goal: Position,
     ) -> list[Position]:
+        """Build an entry-to-goal route from breadth-first parent links.
+
+        Parameters
+        ----------
+        parents : dict of Position to Position or None
+            Predecessor map rooted at the maze entry.
+        goal : Position
+            Final position whose route should be reconstructed.
+
+        Returns
+        -------
+        list of Position
+            Reconstructed route ordered from the root to ``goal``.
+        """
         path: list[Position] = []
 
         current: Position | None = goal
