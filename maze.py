@@ -38,6 +38,27 @@ class Maze:
         entry: Position | None = None,
         exit: Position | None = None,
     ):
+        """Create a maze grid and reserve its centred protected pattern.
+
+        Parameters
+        ----------
+        rows : int
+            Number of maze rows.
+        cols : int
+            Number of maze columns.
+        pattern_name : str
+            Name of a pattern defined in :attr:`PATTERNS`.
+        entry : Position, optional
+            Entry cell; defaults to the top-left cell.
+        exit : Position, optional
+            Exit cell; defaults to the bottom-right cell.
+
+        Raises
+        ------
+        ValueError
+            If the pattern is unknown, does not fit, a marker is invalid, or
+            both markers identify the same cell.
+        """
         self.rows = rows
         self.cols = cols
 
@@ -62,13 +83,45 @@ class Maze:
             raise ValueError("entry and exit must be different cells")
 
     def valid_cell(self, position: Position) -> bool:
+        """Return whether a position lies within this maze's grid.
+
+        Parameters
+        ----------
+        position : Position
+            Position to validate.
+
+        Returns
+        -------
+        bool
+            ``True`` when both position indices are in bounds.
+        """
         return 0 <= position.row < self.rows and 0 <= position.col < self.cols
 
     def get_cell(self, position: Position) -> Cell:
+        """Return the cell at a valid maze position.
+
+        Parameters
+        ----------
+        position : Position
+            Grid position of the requested cell.
+
+        Returns
+        -------
+        Cell
+            Cell stored at ``position``.
+        """
         return self.grid[position.row][position.col]
 
     def remove_wall(self, current: Position, neighbor: Position) -> None:
-        """Open the shared wall between two adjacent cells."""
+        """Open the shared wall between two adjacent cells.
+
+        Parameters
+        ----------
+        current : Position
+            First cell bordering the wall.
+        neighbor : Position
+            Orthogonally adjacent cell bordering the same wall.
+        """
         current_cell = self.grid[current.row][current.col]
         neighbor_cell = self.grid[neighbor.row][neighbor.col]
 
@@ -89,7 +142,18 @@ class Maze:
             neighbor_cell.north = False
 
     def get_neighbors(self, position: Position) -> list[Position]:
-        """Return adjacent cells that are not part of the locked pattern."""
+        """Return in-bounds adjacent cells outside the protected pattern.
+
+        Parameters
+        ----------
+        position : Position
+            Cell whose neighbours are requested.
+
+        Returns
+        -------
+        list of Position
+            Orthogonally adjacent, unlocked positions; wall state is ignored.
+        """
 
         neighbors: list[Position] = []
 
@@ -113,7 +177,18 @@ class Maze:
         self,
         position: Position,
     ) -> list[Position]:
-        """Return adjacent unlocked cells connected by an open wall."""
+        """Return unlocked neighbours connected through open walls.
+
+        Parameters
+        ----------
+        position : Position
+            Cell from which to inspect open passages.
+
+        Returns
+        -------
+        list of Position
+            Adjacent unlocked cells reachable directly from ``position``.
+        """
         neighbors: list[Position] = []
 
         cell = self.get_cell(position)
@@ -161,14 +236,25 @@ class Maze:
         return neighbors
 
     def reset_visited(self) -> None:
-        """Clear traversal state so the maze can be explored again."""
+        """Clear traversal state so the maze can be explored again.
+
+        Returns
+        -------
+        None
+        """
 
         for row in self.grid:
             for cell in row:
                 cell.visited = False
 
     def _lock_42_pattern(self) -> None:
-        """Place the selected pattern at the centre of the maze."""
+        """Mark the selected centred pattern as protected cells.
+
+        Raises
+        ------
+        ValueError
+            If the maze dimensions cannot contain the selected pattern.
+        """
         pattern_height = len(self.pattern)
         pattern_width = max(len(row) for row in self.pattern)
 
@@ -238,6 +324,27 @@ class Maze:
         default: Position,
         name: str,
     ) -> Position:
+        """Return a valid, unlocked marker position.
+
+        Parameters
+        ----------
+        position : Position or None
+            User-supplied marker position, if any.
+        default : Position
+            Position to use when ``position`` is ``None``.
+        name : str
+            Marker name used in validation error messages.
+
+        Returns
+        -------
+        Position
+            Validated marker position.
+
+        Raises
+        ------
+        ValueError
+            If the marker is outside the maze or within the protected pattern.
+        """
         marker_position = position if position is not None else default
 
         if not self.valid_cell(marker_position):

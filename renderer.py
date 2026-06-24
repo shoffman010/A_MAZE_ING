@@ -3,6 +3,7 @@ from position import Position
 
 
 class Renderer:
+    """Render a maze as coloured ANSI terminal art."""
     COLOR_CODES = {
         "BLACK": "90",
         "RED": "91",
@@ -26,6 +27,14 @@ class Renderer:
         path_color: str = "RED",
         pattern_color: str = "CYAN",
     ) -> None:
+        """Create a renderer with the requested display colours.
+
+        Parameters
+        ----------
+        wall_color, path_color, pattern_color : str
+            Valid colour names used to decorate walls, solution paths, and the
+            protected pattern, respectively.
+        """
         self.WALL = self._colorize("██", wall_color)
         self.PATH = self._colorize("••", path_color)
         # self.PATH = self._colorize("░░", path_color)
@@ -36,7 +45,15 @@ class Renderer:
         maze: Maze,
         path: list[Position] | None = None,
     ) -> None:
-        """Print the maze, pattern, and markers - overlay the path when provided."""
+        """Print a maze with its protected pattern, markers, and optional path.
+
+        Parameters
+        ----------
+        maze : Maze
+            Maze to render.
+        path : list of Position or None, optional
+            Solution route to overlay. When omitted, no route is drawn.
+        """
         canvas = self._create_wall_canvas(maze)
 
         self._carve_maze(canvas, maze)
@@ -54,6 +71,20 @@ class Renderer:
             print("".join(row))
 
     def _colorize(self, text: str, color: str) -> str:
+        """Wrap text in an ANSI colour sequence when a colour is configured.
+
+        Parameters
+        ----------
+        text : str
+            Text to decorate.
+        color : str
+            Colour name present in :attr:`COLOR_CODES`.
+
+        Returns
+        -------
+        str
+            Original text for ``DEFAULT``; otherwise ANSI-coloured text.
+        """
         color_code = self.COLOR_CODES[color]
         if not color_code:
             return text
@@ -65,6 +96,15 @@ class Renderer:
         canvas: list[list[str]],
         path: list[Position],
     ) -> None:
+        """Overlay a route on a visual maze canvas.
+
+        Parameters
+        ----------
+        canvas : list of list of str
+            Mutable terminal-art canvas.
+        path : list of Position
+            Ordered route whose cells and connecting passages are drawn.
+        """
 
         for index, position in enumerate(path):
 
@@ -87,6 +127,18 @@ class Renderer:
             canvas[wall_row][wall_col] = self.PATH
 
     def _create_wall_canvas(self, maze: Maze) -> list[list[str]]:
+        """Create a wall-filled canvas sized for a maze.
+
+        Parameters
+        ----------
+        maze : Maze
+            Maze that determines the canvas dimensions.
+
+        Returns
+        -------
+        list of list of str
+            Canvas with two visual slots per maze cell plus an outer border.
+        """
         visual_rows = maze.rows * 2 + 1
         visual_cols = maze.cols * 2 + 1
 
@@ -97,6 +149,15 @@ class Renderer:
         canvas: list[list[str]],
         maze: Maze,
     ) -> None:
+        """Clear canvas positions corresponding to open maze cells and passages.
+
+        Parameters
+        ----------
+        canvas : list of list of str
+            Wall-filled canvas to modify in place.
+        maze : Maze
+            Maze whose wall configuration is rendered.
+        """
         for row_index, row in enumerate(maze.grid):
             for col_index, cell in enumerate(row):
                 canvas_row = row_index * 2 + 1
@@ -125,6 +186,17 @@ class Renderer:
         position: Position,
         marker: str,
     ) -> None:
+        """Place one marker in the canvas cell for a maze position.
+
+        Parameters
+        ----------
+        canvas : list of list of str
+            Canvas to modify in place.
+        position : Position
+            Maze cell where the marker is displayed.
+        marker : str
+            Rendered marker text.
+        """
         # row, col = position
         canvas_row = position.row * 2 + 1
         canvas_col = position.col * 2 + 1
@@ -135,6 +207,15 @@ class Renderer:
         canvas: list[list[str]],
         maze: Maze,
     ) -> None:
+        """Draw the protected pattern over the maze canvas.
+
+        Parameters
+        ----------
+        canvas : list of list of str
+            Canvas to modify in place.
+        maze : Maze
+            Maze containing the cells marked as protected pattern cells.
+        """
         for row_index, row in enumerate(maze.grid):
             for col_index, cell in enumerate(row):
                 if not cell.locked_42:

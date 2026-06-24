@@ -11,7 +11,14 @@ from menu_ui import Menu
 
 
 def main() -> int:
-    """Load the config file, create the maze, and render it."""
+    """Load configuration and start the interactive maze application.
+
+    Returns
+    -------
+    int
+        Zero after a normal menu exit, or one when configuration loading fails
+        or the required configuration-file argument is missing.
+    """
     if len(sys.argv) != 2:
         print("Usage: python3 a_maze_ing.py config.txt", file=sys.stderr)
         return 1

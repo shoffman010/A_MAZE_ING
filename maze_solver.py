@@ -5,12 +5,24 @@ from position import Position
 
 
 class MazeSolver:
+    """Find routes through carved maze passages."""
 
     def solve(
         self,
         maze: Maze,
     ) -> list[Position]:
-        """Return the shortest open route from the entry to the exit."""
+        """Return the shortest open route from the entry to the exit.
+
+        Parameters
+        ----------
+        maze : Maze
+            Carved maze containing entry and exit markers.
+
+        Returns
+        -------
+        list of Position
+            Positions on the shortest route, ordered from entry to exit.
+        """
 
         maze.reset_visited()
 
@@ -48,6 +60,20 @@ class MazeSolver:
         ],
         goal: Position,
     ) -> list[Position]:
+        """Build an entry-to-goal route from breadth-first parent links.
+
+        Parameters
+        ----------
+        parents : dict of Position to Position or None
+            Predecessor map rooted at the maze entry.
+        goal : Position
+            Final position whose route should be reconstructed.
+
+        Returns
+        -------
+        list of Position
+            Reconstructed route ordered from the root to ``goal``.
+        """
         path: list[Position] = []
 
         current: Position | None = goal

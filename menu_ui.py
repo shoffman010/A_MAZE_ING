@@ -8,6 +8,7 @@ from renderer import Renderer
 
 
 class Menu:
+    """Provide the interactive terminal interface for maze operations."""
     COLORS = [
         "BLACK",
         "RED",
@@ -24,6 +25,13 @@ class Menu:
         self,
         config: Config,
     ) -> None:
+        """Run the maze generation and display menu until the user exits.
+
+        Parameters
+        ----------
+        config : Config
+            Validated settings used for initial generation and file output.
+        """
 
         wall_color = config.wall_color
         path_color = config.path_color
@@ -122,6 +130,20 @@ class Menu:
         name: str,
         current: str,
     ) -> str:
+        """Prompt until the user selects a supported display colour.
+
+        Parameters
+        ----------
+        name : str
+            Human-readable label for the colour being changed.
+        current : str
+            Currently selected colour name.
+
+        Returns
+        -------
+        str
+            Newly selected colour name from :attr:`COLORS`.
+        """
 
         while True:
 
