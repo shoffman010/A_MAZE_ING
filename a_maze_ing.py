@@ -16,8 +16,8 @@ def main() -> int:
     Returns
     -------
     int
-        Zero after a normal menu exit, or one when configuration loading fails
-        or the required configuration-file argument is missing.
+        Zero after a normal menu exit, or one when configuration loading,
+        maze setup, or a user-requested file operation fails.
     """
     if len(sys.argv) != 2:
         print("Usage: python3 a_maze_ing.py config.txt", file=sys.stderr)
@@ -58,7 +58,11 @@ def main() -> int:
     # renderer.render(maze, path,)
 
     menu = Menu()
-    menu.run(config)
+    try:
+        menu.run(config)
+    except (OSError, ValueError) as error:
+        print(f"Error: {error}", file=sys.stderr)
+        return 1
 
     return 0
 

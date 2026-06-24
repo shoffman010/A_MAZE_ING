@@ -14,7 +14,7 @@ debug:
 	$(PYTHON) -m pdb $(MAIN) $(CONFIG)
 
 clean:
-	rm -rf __pycache__
+	rm -rf __pycache__ .mypy_cache .pytest_cache .ruff_cache htmlcov .coverage
 
 lint:
 	flake8 .
