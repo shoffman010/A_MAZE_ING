@@ -18,7 +18,10 @@ class MazeSolver:
 
         maze.get_cell(maze.entry).visited = True
 
-        parents: dict[Position, Position | None,] = {maze.entry: None}
+        parents: dict[
+            Position,
+            Position | None,
+        ] = {maze.entry: None}
 
         while cell_queue:
             current_cell = cell_queue.popleft()
@@ -32,7 +35,10 @@ class MazeSolver:
                 neighbor_cell.visited = True
                 parents[neighbor] = current_cell
                 cell_queue.append(neighbor)
-        return self._reconstruct_path(parents, maze.exit,)
+        return self._reconstruct_path(
+            parents,
+            maze.exit,
+        )
 
     def _reconstruct_path(
         self,

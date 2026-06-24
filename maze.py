@@ -2,33 +2,32 @@ from cell import Cell
 from position import Position
 from direction import Direction
 
+
 class Maze:
     """A grid maze with an untouchable, locked pattern."""
 
     PATTERNS = {
-    "42": (
-        "# # ###",
-        "# #   #",
-        "### ###",
-        "  # #  ",
-        "  # ###",
-    ),
-    "X": (
-        "#   #",
-        " # # ",
-        "  #  ",
-        " # # ",
-        "#   #",
-    ),
-    "Box":
-        (
+        "42": (
+            "# # ###",
+            "# #   #",
+            "### ###",
+            "  # #  ",
+            "  # ###",
+        ),
+        "X": (
+            "#   #",
+            " # # ",
+            "  #  ",
+            " # # ",
+            "#   #",
+        ),
+        "Box": (
             "######",
             "#    # ",
             "#    # ",
-            "#    # ",            
+            "#    # ",
             "######",
-        )
-    
+        ),
     }
 
     def __init__(
@@ -43,13 +42,10 @@ class Maze:
         self.cols = cols
 
         self.grid: list[list[Cell]] = [
-            [Cell() for _ in range(cols)]
-            for _ in range(rows)
+            [Cell() for _ in range(cols)] for _ in range(rows)
         ]
         if pattern_name not in self.PATTERNS:
-            valid_patterns = ", ".join(
-                self.PATTERNS.keys()
-            )
+            valid_patterns = ", ".join(self.PATTERNS.keys())
 
             raise ValueError(
                 f"unknown pattern '{pattern_name}'. "
@@ -66,18 +62,12 @@ class Maze:
             raise ValueError("entry and exit must be different cells")
 
     def valid_cell(self, position: Position) -> bool:
-        return (
-            0 <= position.row < self.rows
-            and
-            0 <= position.col < self.cols
-        )
+        return 0 <= position.row < self.rows and 0 <= position.col < self.cols
 
     def get_cell(self, position: Position) -> Cell:
         return self.grid[position.row][position.col]
 
-    def remove_wall(self,
-                    current: Position,
-                    neighbor: Position) -> None:
+    def remove_wall(self, current: Position, neighbor: Position) -> None:
         """Open the shared wall between two adjacent cells."""
         current_cell = self.grid[current.row][current.col]
         neighbor_cell = self.grid[neighbor.row][neighbor.col]
@@ -111,14 +101,18 @@ class Maze:
         # ]
         for direction in Direction:
             new_neighbor = position.move(direction)
-            if self.valid_cell(new_neighbor) and not self.get_cell(new_neighbor).locked_42:
+            if (
+                self.valid_cell(new_neighbor)
+                and not self.get_cell(new_neighbor).locked_42
+            ):
                 neighbors.append(new_neighbor)
 
         return neighbors
-    
+
     def get_reachable_neighbors(
-    self,
-    position: Position,) -> list[Position]:
+        self,
+        position: Position,
+    ) -> list[Position]:
         """Return adjacent unlocked cells connected by an open wall."""
         neighbors: list[Position] = []
 
@@ -172,7 +166,7 @@ class Maze:
         for row in self.grid:
             for cell in row:
                 cell.visited = False
-        
+
     def _lock_42_pattern(self) -> None:
         """Place the selected pattern at the centre of the maze."""
         pattern_height = len(self.pattern)

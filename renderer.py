@@ -1,6 +1,7 @@
 from maze import Maze
 from position import Position
 
+
 class Renderer:
     COLOR_CODES = {
         "BLACK": "90",
@@ -26,10 +27,15 @@ class Renderer:
         pattern_color: str = "CYAN",
     ) -> None:
         self.WALL = self._colorize("██", wall_color)
-        self.PATH = self._colorize("..", path_color)
+        self.PATH = self._colorize("••", path_color)
+        # self.PATH = self._colorize("░░", path_color)
         self.PATTERN = self._colorize("██", pattern_color)
 
-    def render(self, maze: Maze, path: list[Position] | None = None,) -> None:
+    def render(
+        self,
+        maze: Maze,
+        path: list[Position] | None = None,
+    ) -> None:
         """Print the maze, pattern, and markers - overlay the path when provided."""
         canvas = self._create_wall_canvas(maze)
 
@@ -54,11 +60,11 @@ class Renderer:
 
         return f"\033[{color_code}m{text}\033[0m"
 
-
     def _draw_path(
-    self,
-    canvas: list[list[str]],
-    path: list[Position],) -> None:
+        self,
+        canvas: list[list[str]],
+        path: list[Position],
+    ) -> None:
 
         for index, position in enumerate(path):
 
@@ -80,15 +86,11 @@ class Renderer:
 
             canvas[wall_row][wall_col] = self.PATH
 
-
     def _create_wall_canvas(self, maze: Maze) -> list[list[str]]:
         visual_rows = maze.rows * 2 + 1
         visual_cols = maze.cols * 2 + 1
 
-        return [
-            [self.WALL for _ in range(visual_cols)]
-            for _ in range(visual_rows)
-        ]
+        return [[self.WALL for _ in range(visual_cols)] for _ in range(visual_rows)]
 
     def _carve_maze(
         self,
@@ -142,10 +144,8 @@ class Renderer:
                 canvas_col = col_index * 2 + 1
                 canvas[canvas_row][canvas_col] = self.PATTERN
 
-                if row_index > 0 and\
-                        maze.grid[row_index - 1][col_index].locked_42:
+                if row_index > 0 and maze.grid[row_index - 1][col_index].locked_42:
                     canvas[canvas_row - 1][canvas_col] = self.PATTERN
 
-                if col_index > 0 and\
-                        maze.grid[row_index][col_index - 1].locked_42:
+                if col_index > 0 and maze.grid[row_index][col_index - 1].locked_42:
                     canvas[canvas_row][canvas_col - 1] = self.PATTERN

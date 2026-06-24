@@ -34,15 +34,16 @@ CONFIG_KEYS = (
 KEY_VALUE_PATTERN = re.compile(
     rf"^\s*(?P<key>{'|'.join(CONFIG_KEYS)})\s*=\s*(?P<value>.*?)\s*$"
 )
-COORDINATE_PATTERN = re.compile(
-    r"^\s*(?P<x>-?\d+)\s*,\s*(?P<y>-?\d+)\s*$"
-)
+COORDINATE_PATTERN = re.compile(r"^\s*(?P<x>-?\d+)\s*,\s*(?P<y>-?\d+)\s*$")
 BOOLEAN_PATTERN = re.compile(r"^(?P<value>True|False)$")
 
-REQUIRED_KEYS = set(CONFIG_KEYS) - {"PATTERN","SEED",
-        "WALL_COLOR",
-        "PATH_COLOR",
-        "PATTERN_COLOR",}
+REQUIRED_KEYS = set(CONFIG_KEYS) - {
+    "PATTERN",
+    "SEED",
+    "WALL_COLOR",
+    "PATH_COLOR",
+    "PATTERN_COLOR",
+}
 
 COLOR_NAMES = {
     "BLACK",
@@ -75,7 +76,7 @@ def load_config(path: str) -> Config:
                     f"expected one of {valid_keys}=VALUE"
                 )
 
-            key = key_value_match.group("key")
+            key = key_value_match.group("key").strip()
             value = key_value_match.group("value").strip()
 
             if key in values:

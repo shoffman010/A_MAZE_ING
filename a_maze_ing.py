@@ -32,7 +32,7 @@ def main() -> int:
 
     # generator = MazeGenerator(seed=config.seed)
     # generator.generate(maze, perfect=config.perfect)
-    
+
     # renderer = Renderer(
     #     wall_color=config.wall_color,
     #     path_color=config.path_color,
@@ -58,9 +58,6 @@ def main() -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
-
-
-
 
 
 # stty size -- to check bash... col row for terminals

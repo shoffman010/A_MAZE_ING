@@ -6,6 +6,7 @@ from position import Position
 
 sys.setrecursionlimit(20000)
 
+
 class MazeGenerator:
 
     _MAX_ROOM_SHAPES = ((2, 4), (3, 3), (4, 2))
@@ -29,11 +30,9 @@ class MazeGenerator:
 
         if not perfect:
             self._add_imperfections(maze)
-    
+
     def _get_not_visited_neighbors(
-            self,
-            maze: Maze,
-            position: Position
+        self, maze: Maze, position: Position
     ) -> list[Position]:
         neighbors: list[Position] = []
 
@@ -42,12 +41,12 @@ class MazeGenerator:
             if not cell.visited:
                 neighbors.append(neighbor)
         return neighbors
-    
-    
+
     def _dfs(
-    self,
-    maze: Maze,
-    position: Position, ) -> None:
+        self,
+        maze: Maze,
+        position: Position,
+    ) -> None:
         current = maze.get_cell(position)
 
         current.visited = True
