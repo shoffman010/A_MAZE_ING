@@ -2,10 +2,10 @@ PYTHON := python3
 MAIN := a_maze_ing.py
 CONFIG := config.txt
 
-.PHONY: install run debug clean lint lint-strict
+.PHONY: install run debug clean lint lint-strict test
 
 install:
-	$(PYTHON) -m pip install --upgrade pip flake8 mypy
+	$(PYTHON) -m pip install --upgrade pip flake8 mypy pytest
 
 run:
 	$(PYTHON) $(MAIN) $(CONFIG)
@@ -23,3 +23,6 @@ lint:
 lint-strict:
 	flake8 .
 	mypy . --strict
+
+test:
+	$(PYTHON) -m pytest
