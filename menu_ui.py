@@ -5,7 +5,8 @@ from maze_generator import MazeGenerator
 from maze_writer import MazeWriter
 from position import Position
 from renderer import Renderer
-
+import time
+import os
 
 class Menu:
     """Provide the interactive terminal interface for maze operations."""
@@ -20,6 +21,28 @@ class Menu:
         "WHITE",
         "DEFAULT",
     ]
+  
+
+    def _animate_solution(
+        self,
+        renderer: Renderer,
+        maze: Maze,
+        path: list[Position],
+    ) -> None:
+
+        for index in range(1, len(path) + 1):
+
+            # print("\033[2J\033[H", end="")
+            print("\033[H", end="")
+            # os.system("cls" if os.name == "nt" else "clear")
+
+            renderer.render(
+                maze,
+                path=path[:index],
+            )
+
+            time.sleep(0.05)
+
 
     def run(
         self,
@@ -48,8 +71,6 @@ class Menu:
         generator = MazeGenerator(seed=config.seed)
         generator.generate(maze, perfect=config.perfect)
 
-        # renderer.render(maze)
-
         show = False
 
         while True:
@@ -60,11 +81,14 @@ class Menu:
                 pattern_color=pattern_color,
             )
 
-            print("\033[2J\033[H", end="")
+            # print("\033[2J\033[H", end="")
+            os.system("cls" if os.name == "nt" else "clear")
+            # print("\033[H", end="")
 
             if show:
                 solver = MazeSolver()
                 path = solver.solve(maze)
+
                 renderer.render(maze, path)
             else:
                 renderer.render(maze)
@@ -92,6 +116,14 @@ class Menu:
                 generator.generate(maze, perfect=config.perfect)
                 show = False
             elif choice == "2":
+                solver = MazeSolver()
+                path = solver.solve(maze)
+
+                self._animate_solution(
+                    renderer,
+                    maze,
+                    path,
+                )
                 show = True
             elif choice == "3":
                 show = False

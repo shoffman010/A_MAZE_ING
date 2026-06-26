@@ -36,14 +36,15 @@ class Renderer:
             protected pattern, respectively.
         """
         self.WALL = self._colorize("██", wall_color)
-        self.PATH = self._colorize("••", path_color)
-        # self.PATH = self._colorize("░░", path_color)
+        # self.PATH = self._colorize("••", path_color)
+        self.PATH = self._colorize("░░", path_color)
         self.PATTERN = self._colorize("██", pattern_color)
 
     def render(
         self,
         maze: Maze,
         path: list[Position] | None = None,
+        current: Position | None = None,
     ) -> None:
         """Print a maze with its protected pattern, markers, and optional path.
 
@@ -63,6 +64,7 @@ class Renderer:
                 canvas,
                 path,
             )
+    
         self._draw_42_pattern(canvas, maze)
         self._draw_cell_marker(canvas, maze.entry, self.ENTRY)
         self._draw_cell_marker(canvas, maze.exit, self.EXIT)

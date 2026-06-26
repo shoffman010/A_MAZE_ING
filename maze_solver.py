@@ -2,6 +2,8 @@ from collections import deque
 
 from maze import Maze
 from position import Position
+import time
+from renderer import Renderer
 
 
 class MazeSolver:
@@ -23,7 +25,7 @@ class MazeSolver:
         list of Position
             Positions on the shortest route, ordered from entry to exit.
         """
-
+        
         maze.reset_visited()
 
         cell_queue = deque([maze.entry])
@@ -51,7 +53,7 @@ class MazeSolver:
             parents,
             maze.exit,
         )
-
+        
     def _reconstruct_path(
         self,
         parents: dict[
