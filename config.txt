@@ -1,10 +1,11 @@
 # Default A-Maze-ing configuration
-WIDTH=20
-HEIGHT=20
+WIDTH=30
+HEIGHT=15
 ENTRY=1,1
-EXIT=10,18
+EXIT=29,14
 OUTPUT_FILE=maze.txt
 PERFECT=False
+# Optional: 42, X, Box
 PATTERN=42
 # Optional: use the same integer seed to recreate exactly the same maze.
 # Omit this setting for a new random maze each run.

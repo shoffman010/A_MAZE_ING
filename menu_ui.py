@@ -8,6 +8,7 @@ from renderer import Renderer
 import time
 import os
 
+
 class Menu:
     """Provide the interactive terminal interface for maze operations."""
     COLORS = [
@@ -21,7 +22,16 @@ class Menu:
         "WHITE",
         "DEFAULT",
     ]
-  
+
+    def _print_menu(self) -> None:
+        print()
+        print("=== A-Maze-ing ===")
+        print("1. Generate new maze")
+        print("2. Show solution")
+        print("3. Hide solution")
+        print("4. Change colors")
+        print("5. Save maze")
+        print("6. Exit")
 
     def _animate_solution(
         self,
@@ -42,7 +52,6 @@ class Menu:
             )
 
             time.sleep(0.05)
-
 
     def run(
         self,
@@ -72,6 +81,7 @@ class Menu:
         generator.generate(maze, perfect=config.perfect)
 
         show = False
+        redraw_screen = True
 
         while True:
 
@@ -81,26 +91,22 @@ class Menu:
                 pattern_color=pattern_color,
             )
 
-            # print("\033[2J\033[H", end="")
-            os.system("cls" if os.name == "nt" else "clear")
-            # print("\033[H", end="")
+            if redraw_screen:
+                # print("\033[2J\033[H", end="")
+                os.system("cls" if os.name == "nt" else "clear")
+                # print("\033[H", end="")
 
-            if show:
-                solver = MazeSolver()
-                path = solver.solve(maze)
+                if show:
+                    solver = MazeSolver()
+                    path = solver.solve(maze)
 
-                renderer.render(maze, path)
+                    renderer.render(maze, path)
+                else:
+                    renderer.render(maze)
+
+                self._print_menu()
             else:
-                renderer.render(maze)
-
-            print()
-            print("=== A-Maze-ing ===")
-            print("1. Generate new maze")
-            print("2. Show solution")
-            print("3. Hide solution")
-            print("4. Change colors")
-            print("5. Save maze")
-            print("6. Exit")
+                redraw_screen = True
 
             choice = input("Enter your choice :").strip()
 
@@ -125,6 +131,9 @@ class Menu:
                     path,
                 )
                 show = True
+                print("\033[J", end="")
+                self._print_menu()
+                redraw_screen = False
             elif choice == "3":
                 show = False
             elif choice == "4":
