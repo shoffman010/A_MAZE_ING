@@ -5,6 +5,8 @@ from maze_generator import MazeGenerator
 from maze_writer import MazeWriter
 from position import Position
 from renderer import Renderer
+import time
+import os
 
 
 class Menu:
@@ -20,6 +22,85 @@ class Menu:
         "WHITE",
         "DEFAULT",
     ]
+
+    def _print_menu(self) -> None:
+        print()
+        print("=== A-Maze-ing ===")
+        print("1. Generate new maze")
+        print("2. Show solution")
+        print("3. Hide solution")
+        print("4. Change colors")
+        print("5. Save maze")
+        print("6. Exit")
+
+    def _animate_solution(
+        self,
+        renderer: Renderer,
+        maze: Maze,
+        path: list[Position],
+    ) -> None:
+
+        for index in range(1, len(path) + 1):
+
+            # print("\033[2J\033[H", end="")
+            print("\033[H", end="")
+            # os.system("cls" if os.name == "nt" else "clear")
+
+            renderer.render(
+                maze,
+                path=path[:index],
+            )
+
+            time.sleep(0.05)
+
+    def _generate_maze(self, config: Config) -> Maze:
+        """Create and generate a maze from the current configuration.
+
+        Parameters
+        ----------
+        config : Config
+            Validated settings used to build and carve the maze.
+
+        Returns
+        -------
+        Maze
+            Newly generated maze ready to display or save.
+        """
+        maze = Maze(
+            config.height,
+            config.width,
+            config.pattern,
+            entry=Position(*config.entry),
+            exit=Position(*config.exit),
+        )
+
+        generator = MazeGenerator(seed=config.seed)
+        generator.generate(maze, perfect=config.perfect)
+
+        return maze
+
+    def _save_maze(
+        self,
+        maze: Maze,
+        output_file: str,
+    ) -> None:
+        """Write the maze and its shortest path to the configured file.
+
+        Parameters
+        ----------
+        maze : Maze
+            Generated maze to serialize.
+        output_file : str
+            Destination path from the configuration file.
+        """
+        solver = MazeSolver()
+        path = solver.solve(maze)
+        writer = MazeWriter()
+        writer.write_maze(
+            maze,
+            path,
+            output_file,
+        )
 
     def run(
         self,
@@ -37,20 +118,11 @@ class Menu:
         path_color = config.path_color
         pattern_color = config.pattern_color
 
-        maze = Maze(
-            config.height,
-            config.width,
-            config.pattern,
-            entry=Position(*config.entry),
-            exit=Position(*config.exit),
-        )
-
-        generator = MazeGenerator(seed=config.seed)
-        generator.generate(maze, perfect=config.perfect)
-
-        # renderer.render(maze)
+        maze = self._generate_maze(config)
+        self._save_maze(maze, config.output_file)
 
         show = False
+        redraw_screen = True
 
         while True:
 
@@ -60,39 +132,42 @@ class Menu:
                 pattern_color=pattern_color,
             )
 
-            print("\033[2J\033[H", end="")
+            if redraw_screen:
+                # print("\033[2J\033[H", end="")
+                os.system("cls" if os.name == "nt" else "clear")
+                # print("\033[H", end="")
 
-            if show:
-                solver = MazeSolver()
-                path = solver.solve(maze)
-                renderer.render(maze, path)
+                if show:
+                    solver = MazeSolver()
+                    path = solver.solve(maze)
+
+                    renderer.render(maze, path)
+                else:
+                    renderer.render(maze)
+
+                self._print_menu()
             else:
-                renderer.render(maze)
-
-            print()
-            print("=== A-Maze-ing ===")
-            print("1. Generate new maze")
-            print("2. Show solution")
-            print("3. Hide solution")
-            print("4. Change colors")
-            print("5. Save maze")
-            print("6. Exit")
+                redraw_screen = True
 
             choice = input("Enter your choice :").strip()
 
             if choice == "1":
-                maze = Maze(
-                    config.height,
-                    config.width,
-                    config.pattern,
-                    entry=Position(*config.entry),
-                    exit=Position(*config.exit),
-                )
-                generator = MazeGenerator(seed=config.seed)
-                generator.generate(maze, perfect=config.perfect)
+                maze = self._generate_maze(config)
+                self._save_maze(maze, config.output_file)
                 show = False
             elif choice == "2":
+                solver = MazeSolver()
+                path = solver.solve(maze)
+
+                self._animate_solution(
+                    renderer,
+                    maze,
+                    path,
+                )
                 show = True
+                print("\033[J", end="")
+                self._print_menu()
+                redraw_screen = False
             elif choice == "3":
                 show = False
             elif choice == "4":
@@ -109,21 +184,17 @@ class Menu:
                     pattern_color,
                 )
             elif choice == "5":
-                solver = MazeSolver()
-                path = solver.solve(maze)
-                writer = MazeWriter()
-                writer.write_maze(
-                    maze,
-                    path,
-                    config.output_file,
-                )
+                self._save_maze(maze, config.output_file)
                 print()
                 print(f"Saved to {config.output_file}")
                 input("Press Enter to continue...")
             elif choice == "6":
                 break
             else:
-                input("Please enter valid number from 1-6. Press Enter to continue...")
+                input(
+                    "Please enter valid number from 1-6. "
+                    "Press Enter to continue..."
+                )
 
     def _choose_color(
         self,
@@ -168,4 +239,6 @@ class Menu:
                 pass
 
             print()
-            print(f"Please enter a number " f"between 1 and {len(self.COLORS)}.")
+            print(
+                f"Please enter a number between 1 and {len(self.COLORS)}."
+            )

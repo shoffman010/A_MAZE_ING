@@ -76,8 +76,16 @@ class Maze:
         self.pattern = self.PATTERNS[pattern_name]
 
         self._lock_42_pattern()
-        self.entry = self._validated_marker(entry, Position(0, 0), "entry")
-        self.exit = self._validated_marker(exit, Position(rows - 1, cols - 1), "exit")
+        self.entry = self._validated_marker(
+            entry,
+            Position(0, 0),
+            "entry"
+        )
+        self.exit = self._validated_marker(
+            exit,
+            Position(rows - 1, cols - 1),
+            "exit",
+        )
 
         if self.entry == self.exit:
             raise ValueError("entry and exit must be different cells")
@@ -200,7 +208,10 @@ class Maze:
                 position.col,
             )
 
-            if self.valid_cell(neighbor) and not self.get_cell(neighbor).locked_42:
+            if (
+                self.valid_cell(neighbor)
+                and not self.get_cell(neighbor).locked_42
+            ):
                 neighbors.append(neighbor)
 
         if not cell.east:
@@ -210,7 +221,10 @@ class Maze:
                 position.col + 1,
             )
 
-            if self.valid_cell(neighbor) and not self.get_cell(neighbor).locked_42:
+            if (
+                self.valid_cell(neighbor)
+                and not self.get_cell(neighbor).locked_42
+            ):
                 neighbors.append(neighbor)
 
         if not cell.south:
@@ -220,7 +234,10 @@ class Maze:
                 position.col,
             )
 
-            if self.valid_cell(neighbor) and not self.get_cell(neighbor).locked_42:
+            if (
+                self.valid_cell(neighbor)
+                and not self.get_cell(neighbor).locked_42
+            ):
                 neighbors.append(neighbor)
 
         if not cell.west:
@@ -230,7 +247,10 @@ class Maze:
                 position.col - 1,
             )
 
-            if self.valid_cell(neighbor) and not self.get_cell(neighbor).locked_42:
+            if (
+                self.valid_cell(neighbor)
+                and not self.get_cell(neighbor).locked_42
+            ):
                 neighbors.append(neighbor)
 
         return neighbors

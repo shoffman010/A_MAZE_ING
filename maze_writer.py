@@ -8,7 +8,7 @@ class MazeWriter:
     def write_maze(
         self,
         maze: Maze,
-        path: str,
+        path: list[Position],
         output_file: str,
     ) -> None:
         """Write the maze layout, markers, and solution route to a file.
