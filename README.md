@@ -229,6 +229,53 @@ for position in path:
 The generator mutates the `Maze` object in place. The maze structure does not
 need to match the serialized output format; `MazeWriter` converts it when saving.
 
+### Packaged Reusable Module
+
+The reusable code is packaged as a Python distribution named `mazegen`. The
+package build creates root-level files named like `mazegen-1.0.0.tar.gz` and
+`mazegen-1.0.0-py3-none-any.whl`.
+
+Build the package from the repository root:
+
+```sh
+make install
+make package
+```
+
+Install one generated artifact in another virtual environment:
+
+```sh
+python3 -m pip install mazegen-1.0.0-py3-none-any.whl
+```
+
+Then use the reusable API:
+
+```python
+from mazegen import Maze, MazeGenerator, MazeSolver, Position
+
+maze = Maze(
+    rows=20,
+    cols=20,
+    pattern_name="42",
+    entry=Position(0, 0),
+    exit=Position(19, 19),
+)
+
+MazeGenerator(seed=42).generate(maze, perfect=True)
+solution = MazeSolver().solve(maze)
+
+print(len(solution))
+print(maze.get_cell(Position(0, 0)).hex_value)
+```
+
+Packaging files:
+
+- `pyproject.toml` tells Python which build backend to use.
+- `setup.py` defines the `mazegen` distribution name, version, Python
+  requirement, and the reusable modules included in the package.
+- `mazegen.py` is the public import surface, so future projects can import the
+  reusable classes from one module instead of knowing the internal file layout.
+
 ## Visual Representation
 
 The project uses terminal rendering. Walls are displayed as block characters,
@@ -242,14 +289,15 @@ This repository was developed as a team project by `stehoffm` and `archowdh`.
 
 Role:
 
+- Shared work: the first version of the `Cell` class, which became the starting
+  point for the maze data model.
 - `stehoffm`: terminal rendering and canvas creation, complete configuration
   parsing, protected pattern implementation, locking cells that belong to the
-  pattern, imperfect maze generation, `Makefile`, docstrings, and README
+  pattern, imperfect maze generation, `Makefile`, docstrings, packaging and README
   documentation.
 - `archowdh`: grid initialization, perfect maze generation with DFS/recursive
   backtracking, shortest-path solver, and interactive menu options.
-- Shared work: the first version of the `Cell` class, which became the starting
-  point for the maze data model.
+
 
 Initial planning:
 
@@ -284,7 +332,7 @@ What could be improved:
 
 - Add automated tests for config parsing, wall coherence, seed reproducibility,
   and saved output.
-- Add a packaged `mazegen-*` build artifact for the reusable module.
+- Add broader package-install tests in a separate virtual environment.
 - Keep the mandatory `42` path as the default and document any alternate pattern
   support as optional behaviour.
 

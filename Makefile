@@ -2,11 +2,12 @@ PYTHON := python3
 MAIN := a_maze_ing.py
 CONFIG := config.txt
 
-.PHONY: install run debug clean lint lint-strict test
+.PHONY: install run debug clean lint lint-strict test package
 
 install:
-	$(PYTHON) -m pip show flake8 mypy pytest >/dev/null || \
-		$(PYTHON) -m pip install flake8 mypy pytest
+	$(PYTHON) -c "import flake8, mypy, pytest, setuptools, wheel" || \
+		{ $(PYTHON) -m pip install flake8 mypy pytest setuptools wheel; \
+		$(PYTHON) -c "import flake8, mypy, pytest, setuptools, wheel"; }
 
 run:
 	$(PYTHON) $(MAIN) $(CONFIG)
@@ -27,3 +28,7 @@ lint-strict:
 
 test:
 	$(PYTHON) -m pytest
+
+package:
+	$(PYTHON) setup.py sdist --dist-dir . bdist_wheel --dist-dir .
+	rm -rf build mazegen.egg-info
