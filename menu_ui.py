@@ -53,6 +53,55 @@ class Menu:
 
             time.sleep(0.05)
 
+    def _generate_maze(self, config: Config) -> Maze:
+        """Create and generate a maze from the current configuration.
+
+        Parameters
+        ----------
+        config : Config
+            Validated settings used to build and carve the maze.
+
+        Returns
+        -------
+        Maze
+            Newly generated maze ready to display or save.
+        """
+        maze = Maze(
+            config.height,
+            config.width,
+            config.pattern,
+            entry=Position(*config.entry),
+            exit=Position(*config.exit),
+        )
+
+        generator = MazeGenerator(seed=config.seed)
+        generator.generate(maze, perfect=config.perfect)
+
+        return maze
+
+    def _save_maze(
+        self,
+        maze: Maze,
+        output_file: str,
+    ) -> None:
+        """Write the maze and its shortest path to the configured file.
+
+        Parameters
+        ----------
+        maze : Maze
+            Generated maze to serialize.
+        output_file : str
+            Destination path from the configuration file.
+        """
+        solver = MazeSolver()
+        path = solver.solve(maze)
+        writer = MazeWriter()
+        writer.write_maze(
+            maze,
+            path,
+            output_file,
+        )
+
     def run(
         self,
         config: Config,
@@ -69,16 +118,8 @@ class Menu:
         path_color = config.path_color
         pattern_color = config.pattern_color
 
-        maze = Maze(
-            config.height,
-            config.width,
-            config.pattern,
-            entry=Position(*config.entry),
-            exit=Position(*config.exit),
-        )
-
-        generator = MazeGenerator(seed=config.seed)
-        generator.generate(maze, perfect=config.perfect)
+        maze = self._generate_maze(config)
+        self._save_maze(maze, config.output_file)
 
         show = False
         redraw_screen = True
@@ -111,15 +152,8 @@ class Menu:
             choice = input("Enter your choice :").strip()
 
             if choice == "1":
-                maze = Maze(
-                    config.height,
-                    config.width,
-                    config.pattern,
-                    entry=Position(*config.entry),
-                    exit=Position(*config.exit),
-                )
-                generator = MazeGenerator(seed=config.seed)
-                generator.generate(maze, perfect=config.perfect)
+                maze = self._generate_maze(config)
+                self._save_maze(maze, config.output_file)
                 show = False
             elif choice == "2":
                 solver = MazeSolver()
@@ -150,21 +184,17 @@ class Menu:
                     pattern_color,
                 )
             elif choice == "5":
-                solver = MazeSolver()
-                path = solver.solve(maze)
-                writer = MazeWriter()
-                writer.write_maze(
-                    maze,
-                    path,
-                    config.output_file,
-                )
+                self._save_maze(maze, config.output_file)
                 print()
                 print(f"Saved to {config.output_file}")
                 input("Press Enter to continue...")
             elif choice == "6":
                 break
             else:
-                input("Please enter valid number from 1-6. Press Enter to continue...")
+                input(
+                    "Please enter valid number from 1-6. "
+                    "Press Enter to continue..."
+                )
 
     def _choose_color(
         self,
@@ -209,4 +239,6 @@ class Menu:
                 pass
 
             print()
-            print(f"Please enter a number " f"between 1 and {len(self.COLORS)}.")
+            print(
+                f"Please enter a number between 1 and {len(self.COLORS)}."
+            )

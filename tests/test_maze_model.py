@@ -14,7 +14,10 @@ from position import Position
         (Cell(north=False, east=False, south=False, west=False), "0"),
     ],
 )
-def test_cell_hex_value_encodes_closed_walls(cell: Cell, expected_hex: str) -> None:
+def test_cell_hex_value_encodes_closed_walls(
+    cell: Cell,
+    expected_hex: str,
+) -> None:
     assert cell.hex_value == expected_hex
 
 

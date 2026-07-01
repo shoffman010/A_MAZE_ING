@@ -5,7 +5,8 @@ CONFIG := config.txt
 .PHONY: install run debug clean lint lint-strict test
 
 install:
-	$(PYTHON) -m pip install --upgrade pip flake8 mypy pytest
+	$(PYTHON) -m pip show flake8 mypy pytest >/dev/null || \
+		$(PYTHON) -m pip install flake8 mypy pytest
 
 run:
 	$(PYTHON) $(MAIN) $(CONFIG)
@@ -17,12 +18,12 @@ clean:
 	rm -rf __pycache__ .mypy_cache .pytest_cache .ruff_cache htmlcov .coverage
 
 lint:
-	flake8 .
-	mypy . --warn-return-any --warn-unused-ignores --ignore-missing-imports --disallow-untyped-defs --check-untyped-defs
+	$(PYTHON) -m flake8 .
+	$(PYTHON) -m mypy . --warn-return-any --warn-unused-ignores --ignore-missing-imports --disallow-untyped-defs --check-untyped-defs
 
 lint-strict:
-	flake8 .
-	mypy . --strict
+	$(PYTHON) -m flake8 .
+	$(PYTHON) -m mypy . --strict
 
 test:
 	$(PYTHON) -m pytest

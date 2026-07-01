@@ -1,12 +1,6 @@
 import sys
 
 from config import load_config
-from maze import Maze
-from renderer import Renderer
-from position import Position
-from maze_generator import MazeGenerator
-from maze_writer import MazeWriter
-from maze_solver import MazeSolver
 from menu_ui import Menu
 
 

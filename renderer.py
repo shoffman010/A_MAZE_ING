@@ -64,7 +64,7 @@ class Renderer:
                 canvas,
                 path,
             )
-    
+
         self._draw_42_pattern(canvas, maze)
         self._draw_cell_marker(canvas, maze.entry, self.ENTRY)
         self._draw_cell_marker(canvas, maze.exit, self.EXIT)
@@ -144,14 +144,17 @@ class Renderer:
         visual_rows = maze.rows * 2 + 1
         visual_cols = maze.cols * 2 + 1
 
-        return [[self.WALL for _ in range(visual_cols)] for _ in range(visual_rows)]
+        return [
+            [self.WALL for _ in range(visual_cols)]
+            for _ in range(visual_rows)
+        ]
 
     def _carve_maze(
         self,
         canvas: list[list[str]],
         maze: Maze,
     ) -> None:
-        """Clear canvas positions corresponding to open maze cells and passages.
+        """Clear canvas positions for open maze cells and passages.
 
         Parameters
         ----------
@@ -227,8 +230,14 @@ class Renderer:
                 canvas_col = col_index * 2 + 1
                 canvas[canvas_row][canvas_col] = self.PATTERN
 
-                if row_index > 0 and maze.grid[row_index - 1][col_index].locked_42:
+                if (
+                    row_index > 0
+                    and maze.grid[row_index - 1][col_index].locked_42
+                ):
                     canvas[canvas_row - 1][canvas_col] = self.PATTERN
 
-                if col_index > 0 and maze.grid[row_index][col_index - 1].locked_42:
+                if (
+                    col_index > 0
+                    and maze.grid[row_index][col_index - 1].locked_42
+                ):
                     canvas[canvas_row][canvas_col - 1] = self.PATTERN

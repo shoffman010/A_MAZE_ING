@@ -135,9 +135,18 @@ def load_config(path: str) -> Config:
     output_file = values["OUTPUT_FILE"]
     pattern = values.get("PATTERN") or "42"
     seed = _parse_seed(values.get("SEED", ""))
-    wall_color = _parse_color(values.get("WALL_COLOR", "DEFAULT"), "WALL_COLOR")
-    path_color = _parse_color(values.get("PATH_COLOR", "RED"), "PATH_COLOR")
-    pattern_color = _parse_color(values.get("PATTERN_COLOR", "CYAN"), "PATTERN_COLOR")
+    wall_color = _parse_color(
+        values.get("WALL_COLOR", "DEFAULT"),
+        "WALL_COLOR",
+    )
+    path_color = _parse_color(
+        values.get("PATH_COLOR", "RED"),
+        "PATH_COLOR",
+    )
+    pattern_color = _parse_color(
+        values.get("PATTERN_COLOR", "CYAN"),
+        "PATTERN_COLOR",
+    )
 
     if not output_file:
         raise ValueError("OUTPUT_FILE cannot be empty")
