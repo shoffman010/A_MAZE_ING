@@ -296,7 +296,7 @@ Role:
   pattern, imperfect maze generation, `Makefile`, docstrings, packaging and README
   documentation.
 - `archowdh`: grid initialization, perfect maze generation with DFS/recursive
-  backtracking, shortest-path solver, and interactive menu options.
+  backtracking, shortest-path solver, and interactive menu options, terminal animation for solving part, different patterns for the locked cells.
 
 
 Initial planning:
@@ -348,25 +348,14 @@ Tools used:
 
 Classic references:
 
-- 42 A-Maze-ing subject, version 2.0.
 - Python documentation: <https://docs.python.org/3/>
-- `random.Random` documentation: <https://docs.python.org/3/library/random.html>
-- `dataclasses` documentation: <https://docs.python.org/3/library/dataclasses.html>
-- `collections.deque` documentation: <https://docs.python.org/3/library/collections.html#collections.deque>
-- Jamis Buck, "Maze Generation: Recursive Backtracking":
-  <https://weblog.jamisbuck.org/2010/12/27/maze-generation-recursive-backtracking>
-- Wikipedia, "Maze generation algorithm":
-  <https://en.wikipedia.org/wiki/Maze_generation_algorithm>
+- DFS maze generation: <https://medium.com/@nacerkroudir/randomized-depth-first-search-algorithm-for-maze-generation-fb2d83702742>
 - Wikipedia, "Depth-first search":
   <https://en.wikipedia.org/wiki/Depth-first_search>
-- Wikipedia, "Breadth-first search":
-  <https://en.wikipedia.org/wiki/Breadth-first_search>
+- BFS maze solver: <https://medium.com/@luthfisauqi17_68455/artificial-intelligence-search-problem-solve-maze-using-breadth-first-search-bfs-algorithm-255139c6e1a3>
 
 AI use:
 
-- AI was used as a support tool for reviewing the subject requirements,
-  organizing the implementation checklist, improving documentation wording, and
-  checking for likely edge cases.
-- AI suggestions were reviewed against the code and subject before being kept.
-- The project owner remains responsible for understanding, testing, and defending
-  the implementation.
+- AI was used as a support tool for documentation wording,
+  docstring improvements, and clarifying concepts such as the terminal canvas.
+- Any AI suggestions were reviewed and adapted before being included.
