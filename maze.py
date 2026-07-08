@@ -75,7 +75,7 @@ class Maze:
 
         self.pattern = self.PATTERNS[pattern_name]
 
-        self._lock_42_pattern()
+        self._lock_42_pattern(entry, exit)
         self.entry = self._validated_marker(
             entry,
             Position(0, 0),
@@ -119,6 +119,28 @@ class Maze:
             Cell stored at ``position``.
         """
         return self.grid[position.row][position.col]
+
+    def required_open_positions(self) -> list[Position]:
+        """Return cells that must stay open in the playable board mode.
+
+        Returns
+        -------
+        list of Position
+            The four corners and the board centre. Duplicates are removed for
+            very small mazes where positions can overlap.
+        """
+        positions = [
+            Position(0, 0),
+            Position(0, self.cols - 1),
+            Position(self.rows - 1, 0),
+            Position(self.rows - 1, self.cols - 1),
+            Position(self.rows // 2, self.cols // 2),
+        ]
+        unique_positions: list[Position] = []
+        for position in positions:
+            if position not in unique_positions:
+                unique_positions.append(position)
+        return unique_positions
 
     def remove_wall(self, current: Position, neighbor: Position) -> None:
         """Open the shared wall between two adjacent cells.
@@ -267,7 +289,11 @@ class Maze:
             for cell in row:
                 cell.visited = False
 
-    def _lock_42_pattern(self) -> None:
+    def _lock_42_pattern(
+        self,
+        entry: Position | None,
+        exit: Position | None,
+    ) -> None:
         """Mark the selected centred pattern as protected cells.
 
         Raises
@@ -284,8 +310,10 @@ class Maze:
                 f"minimum size is {pattern_width}x{pattern_height}"
             )
 
-        start_row = (self.rows - pattern_height) // 2
-        start_col = (self.cols - pattern_width) // 2
+        start_row, start_col = self._find_pattern_origin(
+            pattern_height,
+            pattern_width,
+        )
 
         for pattern_row, line in enumerate(self.pattern):
             for pattern_col, mark in enumerate(line):
@@ -295,6 +323,110 @@ class Maze:
                 row = start_row + pattern_row
                 col = start_col + pattern_col
                 self.grid[row][col].locked_42 = True
+
+        self._lock_pattern_pockets(entry, exit)
+
+    def _lock_pattern_pockets(
+        self,
+        entry: Position | None,
+        exit: Position | None,
+    ) -> None:
+        """Absorb pattern-created cul-de-sacs into the closed pattern.
+
+        Parameters
+        ----------
+        entry, exit : Position or None
+            Markers that must not be absorbed into the protected pattern.
+        """
+        protected_positions = set(self.required_open_positions())
+        for marker in (entry, exit):
+            if marker is not None and self.valid_cell(marker):
+                protected_positions.add(marker)
+
+        changed = True
+        while changed:
+            changed = False
+
+            for row in range(self.rows):
+                for col in range(self.cols):
+                    position = Position(row, col)
+                    cell = self.grid[row][col]
+                    if cell.locked_42 or position in protected_positions:
+                        continue
+
+                    if self._unlocked_neighbor_count(position) <= 1:
+                        cell.locked_42 = True
+                        changed = True
+
+    def _unlocked_neighbor_count(self, position: Position) -> int:
+        """Return how many adjacent cells are available as corridors."""
+        count = 0
+
+        for direction in Direction:
+            neighbor = position.move(direction)
+            if (
+                self.valid_cell(neighbor)
+                and not self.grid[neighbor.row][neighbor.col].locked_42
+            ):
+                count += 1
+        return count
+
+    def _find_pattern_origin(
+        self,
+        pattern_height: int,
+        pattern_width: int,
+    ) -> tuple[int, int]:
+        """Choose a visible pattern position that keeps playable cells open.
+
+        Parameters
+        ----------
+        pattern_height, pattern_width : int
+            Dimensions of the selected pattern.
+
+        Returns
+        -------
+        tuple of int
+            Top-left pattern origin as ``(row, column)``.
+        """
+        preferred_row = (self.rows - pattern_height) // 2
+        preferred_col = (self.cols - pattern_width) // 2
+        origins: list[tuple[int, int]] = []
+
+        for row in range(self.rows - pattern_height + 1):
+            for col in range(self.cols - pattern_width + 1):
+                origins.append((row, col))
+
+        origins.sort(
+            key=lambda origin: (
+                self._pattern_overlaps_required_open_cells(
+                    origin[0],
+                    origin[1],
+                ),
+                abs(origin[0] - preferred_row)
+                + abs(origin[1] - preferred_col),
+            )
+        )
+        return origins[0]
+
+    def _pattern_overlaps_required_open_cells(
+        self,
+        start_row: int,
+        start_col: int,
+    ) -> bool:
+        """Return whether a pattern origin would lock a required open cell."""
+        required_positions = set(self.required_open_positions())
+
+        for pattern_row, line in enumerate(self.pattern):
+            for pattern_col, mark in enumerate(line):
+                if mark != "#":
+                    continue
+                position = Position(
+                    start_row + pattern_row,
+                    start_col + pattern_col,
+                )
+                if position in required_positions:
+                    return True
+        return False
 
     # def _lock_42_pattern(self) -> None:
     #     pattern_cells = self._scaled_42_pattern()

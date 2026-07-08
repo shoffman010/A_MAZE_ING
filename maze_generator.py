@@ -11,6 +11,7 @@ class MazeGenerator:
     """Generate perfect or imperfect mazes while preserving locked cells."""
 
     _MAX_ROOM_SHAPES = ((2, 4), (3, 3), (4, 2))
+    _MIN_PLAYABLE_LOOPS = 2
 
     def __init__(self, seed: int | None = None) -> None:
         """Initialize a generator with optional reproducible randomness.
@@ -36,8 +37,8 @@ class MazeGenerator:
         maze : Maze
             Initialized maze to carve in place.
         perfect : bool, default=True
-            If ``True``, produce a single-route maze. If ``False``, add a
-            limited number of extra passages.
+            If ``True``, produce a single-route maze. If ``False``, braid the
+            maze into a Pac-Man-like board with multiple routes.
         """
         maze.reset_visited()
         self._dfs(
@@ -46,7 +47,7 @@ class MazeGenerator:
         )
 
         if not perfect:
-            self._add_imperfections(maze)
+            self._make_playable_board(maze)
 
     def _get_not_visited_neighbors(
         self, maze: Maze, position: Position
@@ -207,14 +208,153 @@ class MazeGenerator:
             current_cell.south = True
             neighbor_cell.north = True
 
-    def _add_imperfections(self, maze: Maze) -> None:
-        """Open limited extra passages without creating oversized rooms.
+    def _get_closed_neighbors(
+        self,
+        maze: Maze,
+        position: Position,
+    ) -> list[Position]:
+        """Return adjacent unlocked cells separated by a closed wall.
 
         Parameters
         ----------
         maze : Maze
-            Already-carved maze to make imperfect in place.
+            Maze containing the cells.
+        position : Position
+            Cell whose closed neighbouring walls are inspected.
+
+        Returns
+        -------
+        list of Position
+            Valid unlocked neighbours not directly reachable from ``position``.
         """
+        reachable = set(maze.get_reachable_neighbors(position))
+
+        return [
+            neighbor
+            for neighbor in maze.get_neighbors(position)
+            if neighbor not in reachable
+        ]
+
+    def _try_remove_wall(
+        self,
+        maze: Maze,
+        position: Position,
+        neighbor: Position,
+    ) -> bool:
+        """Open a wall only when the resulting board remains corridor-like.
+
+        Parameters
+        ----------
+        maze : Maze
+            Maze to mutate.
+        position, neighbor : Position
+            Adjacent cells whose shared wall may be opened.
+
+        Returns
+        -------
+        bool
+            ``True`` when the wall stayed open, otherwise ``False``.
+        """
+        maze.remove_wall(position, neighbor)
+        if self._has_oversized_room(maze):
+            self._restore_wall(maze, position, neighbor)
+            return False
+        return True
+
+    def _cell_degree(
+        self,
+        maze: Maze,
+        position: Position,
+    ) -> int:
+        """Return the number of open passages from a cell."""
+        return len(maze.get_reachable_neighbors(position))
+
+    def _unlocked_positions(self, maze: Maze) -> list[Position]:
+        """Return all cells that are not part of the protected pattern."""
+        positions: list[Position] = []
+
+        for row in range(maze.rows):
+            for col in range(maze.cols):
+                position = Position(row, col)
+                if not maze.get_cell(position).locked_42:
+                    positions.append(position)
+        return positions
+
+    def _dead_ends(self, maze: Maze) -> list[Position]:
+        """Return unlocked cells with only one open passage."""
+        return [
+            position
+            for position in self._unlocked_positions(maze)
+            if self._cell_degree(maze, position) == 1
+        ]
+
+    def _cycle_count(self, maze: Maze) -> int:
+        """Return the independent loop count of the open maze graph.
+
+        Returns
+        -------
+        int
+            Cyclomatic number: open edges minus unlocked cells plus connected
+            components.
+        """
+        positions = self._unlocked_positions(maze)
+        position_set = set(positions)
+        edge_count = 0
+        components = 0
+        seen: set[Position] = set()
+
+        for position in positions:
+            edge_count += self._cell_degree(maze, position)
+        edge_count //= 2
+
+        for position in positions:
+            if position in seen:
+                continue
+            components += 1
+            stack = [position]
+            seen.add(position)
+            while stack:
+                current = stack.pop()
+                for neighbor in maze.get_reachable_neighbors(current):
+                    if neighbor not in position_set or neighbor in seen:
+                        continue
+                    seen.add(neighbor)
+                    stack.append(neighbor)
+
+        return edge_count - len(positions) + components
+
+    def _open_required_corridors(self, maze: Maze) -> None:
+        """Ensure required playable-board cells are open corridors."""
+        for position in maze.required_open_positions():
+            if maze.get_cell(position).locked_42:
+                raise ValueError("required playable-board cell is locked")
+
+            target_degree = min(2, len(maze.get_neighbors(position)))
+            attempts = 0
+
+            while (
+                self._cell_degree(maze, position) < target_degree
+                and attempts < maze.rows * maze.cols
+            ):
+                attempts += 1
+                candidates = self._get_closed_neighbors(maze, position)
+                if not candidates:
+                    break
+                candidates.sort(
+                    key=lambda neighbor: self._cell_degree(maze, neighbor)
+                )
+
+                opened = False
+                for neighbor in candidates:
+                    if self._try_remove_wall(maze, position, neighbor):
+                        opened = True
+                        break
+
+                if not opened:
+                    break
+
+    def _open_extra_loops(self, maze: Maze) -> None:
+        """Add enough independent loops for default playable-board mode."""
         candidates: list[tuple[Position, Position]] = []
 
         for row in range(maze.rows):
@@ -223,7 +363,6 @@ class MazeGenerator:
                 if maze.get_cell(position).locked_42:
                     continue
 
-                # Looking only east and south considers every shared wall once.
                 for neighbor in (
                     Position(row, col + 1),
                     Position(row + 1, col),
@@ -238,18 +377,55 @@ class MazeGenerator:
 
         self._random.shuffle(candidates)
 
-        # One extra connection turns the DFS tree into an imperfect maze.  More
-        # are useful for variety, but a small cap keeps the maze corridor-like.
-        additions = max(1, len(candidates) // 12)
-        added = 0
-
         for position, neighbor in candidates:
-            if added >= additions:
+            if self._cycle_count(maze) >= self._MIN_PLAYABLE_LOOPS:
                 break
+            self._try_remove_wall(maze, position, neighbor)
 
-            maze.remove_wall(position, neighbor)
-            if self._has_oversized_room(maze):
-                self._restore_wall(maze, position, neighbor)
-                continue
+    def _braid_dead_ends(self, maze: Maze) -> None:
+        """Remove dead ends by opening safe neighbouring walls."""
+        stalled_rounds = 0
+        previous_dead_end_count = len(self._dead_ends(maze))
 
-            added += 1
+        while previous_dead_end_count and stalled_rounds < 2:
+            dead_ends = self._dead_ends(maze)
+            self._random.shuffle(dead_ends)
+            opened_any = False
+
+            for position in dead_ends:
+                if self._cell_degree(maze, position) != 1:
+                    continue
+
+                candidates = self._get_closed_neighbors(maze, position)
+                self._random.shuffle(candidates)
+                candidates.sort(
+                    key=lambda neighbor: self._cell_degree(maze, neighbor)
+                )
+
+                for neighbor in candidates:
+                    if self._try_remove_wall(maze, position, neighbor):
+                        opened_any = True
+                        break
+
+            current_dead_end_count = len(self._dead_ends(maze))
+            if (
+                not opened_any
+                or current_dead_end_count >= previous_dead_end_count
+            ):
+                stalled_rounds += 1
+            else:
+                stalled_rounds = 0
+            previous_dead_end_count = current_dead_end_count
+
+    def _make_playable_board(self, maze: Maze) -> None:
+        """Braid a DFS maze into the default Pac-Man-like board.
+
+        Parameters
+        ----------
+        maze : Maze
+            Already-carved maze to make playable in place.
+        """
+        self._open_required_corridors(maze)
+        self._open_extra_loops(maze)
+        self._braid_dead_ends(maze)
+        self._open_required_corridors(maze)

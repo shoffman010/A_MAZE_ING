@@ -9,10 +9,11 @@ text configuration file, generates a maze, displays it in the terminal, and can
 save the result in the hexadecimal wall format required by the subject.
 
 The maze is built as a grid of cells. Each cell stores four wall flags: north,
-east, south, and west. A protected central pattern is kept closed so the visual
+east, south, and west. A protected pattern is kept closed so the visual
 rendering contains a visible `42`. The program can generate either a perfect
-maze, with exactly one route between cells, or an imperfect maze with a limited
-number of extra passages.
+maze, with exactly one route between cells and no loops, or a default playable
+board with multiple routes, open corners, an open centre, and no dead ends in
+the corridor graph.
 
 The project includes:
 
@@ -110,7 +111,7 @@ Mandatory keys:
 | `ENTRY` | `x,y` | Entry cell coordinates. |
 | `EXIT` | `x,y` | Exit cell coordinates. |
 | `OUTPUT_FILE` | Path | Destination file for the serialized maze. |
-| `PERFECT` | `True` or `False` | Whether the generated maze must have only one path. |
+| `PERFECT` | `True` or `False` | `True` generates a perfect maze. `False` generates a Pac-Man-like playable board. |
 
 Optional keys:
 
@@ -168,9 +169,16 @@ Reasons for choosing recursive backtracking:
 - It is easy to adapt for the required protected `42` cells by excluding locked
   cells from the neighbour list.
 
-When `PERFECT=False`, the generator adds a controlled number of extra passages
-after the first pass. These additions make the maze imperfect while avoiding
-oversized open rooms such as `3x3`, `2x4`, or `4x2` empty rectangles.
+When `PERFECT=False`, the generator turns the DFS tree into a Pac-Man-like
+board. It opens the four corners and the centre as playable corridors, adds at
+least two independent loops, and braids dead ends by opening extra safe walls.
+Every extra opening is checked so it does not create oversized open rooms such
+as `3x3`, `2x4`, or `4x2` empty rectangles.
+
+The protected `42` pattern is placed visibly while avoiding the required open
+cells where possible. Cells that would otherwise become unavoidable
+pattern-created cul-de-sacs are absorbed into the closed pattern, so the
+playable corridor graph can remain fully connected and dead-end free.
 
 ## Reusable Generator
 
@@ -275,6 +283,8 @@ Packaging files:
   requirement, and the reusable modules included in the package.
 - `mazegen.py` is the public import surface, so future projects can import the
   reusable classes from one module instead of knowing the internal file layout.
+- `LICENSE.md` states the reuse and distribution permissions for future
+  projects that build on this generator.
 
 ## Visual Representation
 
@@ -293,8 +303,8 @@ Role:
   point for the maze data model.
 - `stehoffm`: terminal rendering and canvas creation, complete configuration
   parsing, protected pattern implementation, locking cells that belong to the
-  pattern, imperfect maze generation, `Makefile`, docstrings, packaging and README
-  documentation.
+  pattern, playable board generation, `Makefile`, docstrings, packaging and
+  README documentation.
 - `archowdh`: grid initialization, perfect maze generation with DFS/recursive
   backtracking, shortest-path solver, and interactive menu options, terminal animation for solving part, different patterns for the locked cells.
 
@@ -307,8 +317,8 @@ Initial planning:
 - Add grid initialization and recursive backtracking generation.
 - Add the protected `42` pattern and make sure its cells stay locked.
 - Add solving, rendering, menu interaction, and output serialization.
-- Add config validation, imperfect generation, linting support, docstrings, and
-  README updates.
+- Add config validation, playable board generation, linting support, docstrings,
+  and README updates.
 
 How the planning evolved:
 
@@ -319,7 +329,7 @@ How the planning evolved:
   dedicated random generator instance.
 - The work split became more focused as the project grew: `archowdh` worked
   mainly on generation, solving, grid setup, and menu flow, while `stehoffm`
-  worked mainly on parsing, rendering, pattern handling, imperfect mazes, and
+  worked mainly on parsing, rendering, pattern handling, playable boards, and
   project polish.
 
 What worked well:
@@ -335,6 +345,8 @@ What could be improved:
 - Add broader package-install tests in a separate virtual environment.
 - Keep the mandatory `42` path as the default and document any alternate pattern
   support as optional behaviour.
+- Compare generated files with the official `maze_analyzer.py` whenever the
+  latest subject attachment is available.
 
 Tools used:
 
@@ -353,6 +365,8 @@ Classic references:
 - Wikipedia, "Depth-first search":
   <https://en.wikipedia.org/wiki/Depth-first_search>
 - BFS maze solver: <https://medium.com/@luthfisauqi17_68455/artificial-intelligence-search-problem-solve-maze-using-breadth-first-search-bfs-algorithm-255139c6e1a3>
+- MIT License reference:
+  <https://opensource.org/license/mit>
 
 AI use:
 
