@@ -77,3 +77,20 @@ def test_default_board_is_braided_with_open_required_cells() -> None:
     for position in maze.required_open_positions():
         assert not maze.get_cell(position).locked_42
         assert len(maze.get_reachable_neighbors(position)) >= 2
+
+
+def test_impossible_playable_board_is_rejected() -> None:
+    maze = Maze(
+        rows=10,
+        cols=10,
+        pattern_name="42",
+        entry=Position(0, 0),
+        exit=Position(9, 9),
+    )
+
+    try:
+        MazeGenerator(seed=42).generate(maze, perfect=False)
+    except ValueError as error:
+        assert "dead-end-free playable board" in str(error)
+    else:
+        raise AssertionError("expected impossible playable board to fail")

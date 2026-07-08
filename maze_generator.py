@@ -425,7 +425,18 @@ class MazeGenerator:
         maze : Maze
             Already-carved maze to make playable in place.
         """
+        self._validate_playable_board_space(maze)
         self._open_required_corridors(maze)
         self._open_extra_loops(maze)
         self._braid_dead_ends(maze)
         self._open_required_corridors(maze)
+
+    def _validate_playable_board_space(self, maze: Maze) -> None:
+        """Reject layouts that cannot satisfy the playable-board rules."""
+        for position in maze.required_open_positions():
+            if maze.get_cell(position).locked_42:
+                raise ValueError("required playable-board cell is locked")
+            if len(maze.get_neighbors(position)) < 2:
+                raise ValueError(
+                    "maze is too small for a dead-end-free playable board"
+                )

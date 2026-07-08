@@ -142,6 +142,21 @@ class Maze:
                 unique_positions.append(position)
         return unique_positions
 
+    def required_corridor_positions(self) -> list[Position]:
+        """Return required playable cells and their immediate corridors."""
+        positions: list[Position] = []
+
+        for position in self.required_open_positions():
+            if position not in positions:
+                positions.append(position)
+
+            for direction in Direction:
+                neighbor = position.move(direction)
+                if self.valid_cell(neighbor) and neighbor not in positions:
+                    positions.append(neighbor)
+
+        return positions
+
     def remove_wall(self, current: Position, neighbor: Position) -> None:
         """Open the shared wall between two adjacent cells.
 
@@ -338,7 +353,7 @@ class Maze:
         entry, exit : Position or None
             Markers that must not be absorbed into the protected pattern.
         """
-        protected_positions = set(self.required_open_positions())
+        protected_positions = set(self.required_corridor_positions())
         for marker in (entry, exit):
             if marker is not None and self.valid_cell(marker):
                 protected_positions.add(marker)
@@ -398,7 +413,7 @@ class Maze:
 
         origins.sort(
             key=lambda origin: (
-                self._pattern_overlaps_required_open_cells(
+                self._pattern_required_corridor_overlap_count(
                     origin[0],
                     origin[1],
                 ),
@@ -408,13 +423,14 @@ class Maze:
         )
         return origins[0]
 
-    def _pattern_overlaps_required_open_cells(
+    def _pattern_required_corridor_overlap_count(
         self,
         start_row: int,
         start_col: int,
-    ) -> bool:
-        """Return whether a pattern origin would lock a required open cell."""
-        required_positions = set(self.required_open_positions())
+    ) -> int:
+        """Return how many required corridor cells a pattern would lock."""
+        required_positions = set(self.required_corridor_positions())
+        overlap_count = 0
 
         for pattern_row, line in enumerate(self.pattern):
             for pattern_col, mark in enumerate(line):
@@ -425,8 +441,8 @@ class Maze:
                     start_col + pattern_col,
                 )
                 if position in required_positions:
-                    return True
-        return False
+                    overlap_count += 1
+        return overlap_count
 
     # def _lock_42_pattern(self) -> None:
     #     pattern_cells = self._scaled_42_pattern()
