@@ -338,6 +338,7 @@ class Maze:
                 row = start_row + pattern_row
                 col = start_col + pattern_col
                 self.grid[row][col].locked_42 = True
+                self.grid[row][col].pattern_42 = True
 
         self._lock_pattern_pockets(entry, exit)
 
@@ -391,7 +392,7 @@ class Maze:
         pattern_height: int,
         pattern_width: int,
     ) -> tuple[int, int]:
-        """Choose a visible pattern position that keeps playable cells open.
+        """Choose the nearest centred position that keeps key cells open.
 
         Parameters
         ----------
@@ -413,36 +414,80 @@ class Maze:
 
         origins.sort(
             key=lambda origin: (
-                self._pattern_required_corridor_overlap_count(
+                abs(origin[0] - preferred_row)
+                + abs(origin[1] - preferred_col),
+                self._pattern_required_open_overlap_count(
                     origin[0],
                     origin[1],
                 ),
-                abs(origin[0] - preferred_row)
-                + abs(origin[1] - preferred_col),
             )
         )
+
+        for origin in origins:
+            if self._pattern_keeps_required_corridors_open(*origin):
+                return origin
+
         return origins[0]
 
-    def _pattern_required_corridor_overlap_count(
+    def _pattern_keeps_required_corridors_open(
+        self,
+        start_row: int,
+        start_col: int,
+    ) -> bool:
+        """Return whether required cells stay open corridor candidates."""
+        pattern_positions = self._pattern_positions(start_row, start_col)
+
+        for position in self.required_open_positions():
+            if position in pattern_positions:
+                return False
+
+            available_neighbors = 0
+            for direction in Direction:
+                neighbor = position.move(direction)
+                if (
+                    self.valid_cell(neighbor)
+                    and neighbor not in pattern_positions
+                ):
+                    available_neighbors += 1
+
+            if available_neighbors < min(2, len(self.get_neighbors(position))):
+                return False
+
+        return True
+
+    def _pattern_required_open_overlap_count(
         self,
         start_row: int,
         start_col: int,
     ) -> int:
-        """Return how many required corridor cells a pattern would lock."""
-        required_positions = set(self.required_corridor_positions())
+        """Return how many required open cells a pattern would lock."""
+        required_positions = set(self.required_open_positions())
         overlap_count = 0
+
+        for position in self._pattern_positions(start_row, start_col):
+            if position in required_positions:
+                overlap_count += 1
+        return overlap_count
+
+    def _pattern_positions(
+        self,
+        start_row: int,
+        start_col: int,
+    ) -> set[Position]:
+        """Return positions occupied by the selected pattern at an origin."""
+        positions: set[Position] = set()
 
         for pattern_row, line in enumerate(self.pattern):
             for pattern_col, mark in enumerate(line):
-                if mark != "#":
-                    continue
-                position = Position(
-                    start_row + pattern_row,
-                    start_col + pattern_col,
-                )
-                if position in required_positions:
-                    overlap_count += 1
-        return overlap_count
+                if mark == "#":
+                    positions.add(
+                        Position(
+                            start_row + pattern_row,
+                            start_col + pattern_col,
+                        )
+                    )
+
+        return positions
 
     # def _lock_42_pattern(self) -> None:
     #     pattern_cells = self._scaled_42_pattern()

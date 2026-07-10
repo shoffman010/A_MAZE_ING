@@ -1,9 +1,24 @@
+"""Tests for generated maze graph properties in both generation modes."""
+
 from maze import Maze
 from maze_generator import MazeGenerator
 from position import Position
 
 
 def _graph_stats(maze: Maze) -> tuple[int, int, int]:
+    """Measure connectedness, loops, and dead ends in the open maze graph.
+
+    Parameters
+    ----------
+    maze : Maze
+        Generated maze whose unlocked cells should be analysed.
+
+    Returns
+    -------
+    tuple of int
+        ``(components, cycle_count, dead_ends)`` for all unlocked cells. The
+        cycle count is the graph cyclomatic number: edges - nodes + components.
+    """
     positions: list[Position] = []
     edge_count = 0
     dead_ends = 0
@@ -43,6 +58,7 @@ def _graph_stats(maze: Maze) -> tuple[int, int, int]:
 
 
 def test_perfect_maze_has_one_component_and_no_loops() -> None:
+    """Check PERFECT=True produces one connected tree without cycles."""
     maze = Maze(
         rows=15,
         cols=30,
@@ -59,6 +75,7 @@ def test_perfect_maze_has_one_component_and_no_loops() -> None:
 
 
 def test_default_board_is_braided_with_open_required_cells() -> None:
+    """Check default mode keeps required cells open and has useful loops."""
     maze = Maze(
         rows=15,
         cols=30,
@@ -80,12 +97,13 @@ def test_default_board_is_braided_with_open_required_cells() -> None:
 
 
 def test_impossible_playable_board_is_rejected() -> None:
+    """Check too-small Pac-Man boards fail instead of generating bad output."""
     maze = Maze(
-        rows=10,
-        cols=10,
+        rows=8,
+        cols=8,
         pattern_name="42",
         entry=Position(0, 0),
-        exit=Position(9, 9),
+        exit=Position(7, 7),
     )
 
     try:

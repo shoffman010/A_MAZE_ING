@@ -223,7 +223,7 @@ class Renderer:
         """
         for row_index, row in enumerate(maze.grid):
             for col_index, cell in enumerate(row):
-                if not cell.locked_42:
+                if not cell.pattern_42:
                     continue
 
                 canvas_row = row_index * 2 + 1
@@ -232,12 +232,12 @@ class Renderer:
 
                 if (
                     row_index > 0
-                    and maze.grid[row_index - 1][col_index].locked_42
+                    and maze.grid[row_index - 1][col_index].pattern_42
                 ):
                     canvas[canvas_row - 1][canvas_col] = self.PATTERN
 
                 if (
                     col_index > 0
-                    and maze.grid[row_index][col_index - 1].locked_42
+                    and maze.grid[row_index][col_index - 1].pattern_42
                 ):
                     canvas[canvas_row][canvas_col - 1] = self.PATTERN

@@ -25,6 +25,9 @@ The project includes:
 - `maze_writer.py`: output-file writer.
 - `renderer.py`: terminal renderer.
 - `menu_ui.py`: interactive menu.
+- `maze_analyzer.py`: subject-provided output analyser used for final checks.
+- `tests/`: pytest coverage for model behaviour, generated boards, and subject
+  constraints.
 
 ## Instructions
 
@@ -63,6 +66,18 @@ Run lint and type checks:
 make lint
 ```
 
+Run the test suite:
+
+```sh
+make test
+```
+
+Check a saved maze with the subject analyser:
+
+```sh
+python3 maze_analyzer.py maze.txt
+```
+
 Remove generated cache files:
 
 ```sh
@@ -89,10 +104,10 @@ Example:
 
 ```txt
 # Default A-Maze-ing configuration
-WIDTH=20
+WIDTH=30
 HEIGHT=20
 ENTRY=1,1
-EXIT=8,5
+EXIT=29,14
 OUTPUT_FILE=maze.txt
 PERFECT=False
 PATTERN=42
@@ -175,10 +190,13 @@ least two independent loops, and braids dead ends by opening extra safe walls.
 Every extra opening is checked so it does not create oversized open rooms such
 as `3x3`, `2x4`, or `4x2` empty rectangles.
 
-The protected `42` pattern is placed visibly while avoiding the required open
-cells where possible. Cells that would otherwise become unavoidable
-pattern-created cul-de-sacs are absorbed into the closed pattern, so the
-playable corridor graph can remain fully connected and dead-end free.
+The protected `42` pattern is placed as close to the centre as possible while
+keeping the four corners and the centre cell available as open corridors for
+the Pac-Man-like board. The code separates cells that are visibly part of the
+`42` from extra locked cells used only for generation, so pocket-filling cannot
+distort the rendered pattern. Cells that would otherwise become unavoidable
+pattern-created cul-de-sacs can still be absorbed into the closed area, keeping
+the playable corridor graph fully connected and dead-end free.
 
 ## Reusable Generator
 
@@ -306,8 +324,11 @@ Role:
   pattern, playable board generation, `Makefile`, docstrings, packaging and
   README documentation.
 - `archowdh`: grid initialization, perfect maze generation with DFS/recursive
-  backtracking, shortest-path solver, and interactive menu options, terminal animation for solving part, different patterns for the locked cells.
-
+  backtracking, shortest-path solver, interactive menu options, terminal
+  animation for the solving part, and different patterns for the locked cells.
+- Shared v2.0 to v2.2 update work: both team members worked together on the
+  subject update from version 2.0 to version 2.2, including the Pac-Man board
+  constraints, analyzer checks, and final subject-aligned testing.
 
 Initial planning:
 
@@ -327,6 +348,9 @@ How the planning evolved:
 - Optional display colours were added through config and the menu.
 - Reproducible seed support was kept separate from global randomness by using a
   dedicated random generator instance.
+- The v2.2 subject and analyser made the default mode requirements more
+  concrete: corners and centre must be reachable, at least two loops are
+  required, and no-dead-end boards are bonus-grade.
 - The work split became more focused as the project grew: `archowdh` worked
   mainly on generation, solving, grid setup, and menu flow, while `stehoffm`
   worked mainly on parsing, rendering, pattern handling, playable boards, and
@@ -337,16 +361,15 @@ What worked well:
 - Keeping cells responsible for their own hexadecimal wall encoding.
 - Keeping parsing and validation in `config.py`.
 - Using a separate solver to verify and display the shortest path.
+- Adding subject-level pytest checks at the end to compare generated output
+  against the same constraints reported by `maze_analyzer.py`.
 
 What could be improved:
 
-- Add automated tests for config parsing, wall coherence, seed reproducibility,
-  and saved output.
 - Add broader package-install tests in a separate virtual environment.
-- Keep the mandatory `42` path as the default and document any alternate pattern
-  support as optional behaviour.
-- Compare generated files with the official `maze_analyzer.py` whenever the
-  latest subject attachment is available.
+- Keep alternate pattern support clearly documented as optional behaviour, with
+  the mandatory `42` pattern remaining the default.
+- Add more end-to-end tests around the interactive menu flow.
 
 Tools used:
 
@@ -355,6 +378,8 @@ Tools used:
 - `flake8` for style checks.
 - `mypy` for type checks.
 - Git for version control.
+- `pytest` for model, generation, output-format, and subject-constraint tests.
+- `maze_analyzer.py` from the v2.2 subject for output validation.
 
 ## Resources
 
@@ -372,4 +397,8 @@ AI use:
 
 - AI was used as a support tool for documentation wording,
   docstring improvements, and clarifying concepts such as the terminal canvas.
+- After the project was otherwise finished, AI was also used to help create
+  `tests/test_subject_constraints.py` as a final subject-aligned safety check
+  for config parsing, output format, maze constraints, and `maze_analyzer.py`
+  verdicts.
 - Any AI suggestions were reviewed and adapted before being included.

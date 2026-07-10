@@ -12,7 +12,9 @@ class Cell:
     visited : bool, default=False
         Whether a traversal algorithm has visited the cell.
     locked_42 : bool, default=False
-        Whether the cell belongs to the protected central pattern.
+        Whether the cell is unavailable for maze carving.
+    pattern_42 : bool, default=False
+        Whether the cell belongs to the visible central pattern.
     """
 
     north: bool = True
@@ -22,6 +24,7 @@ class Cell:
 
     visited: bool = False
     locked_42: bool = False
+    pattern_42: bool = False
 
     @property
     def hex_value(self) -> str:
