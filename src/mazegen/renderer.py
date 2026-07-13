@@ -3,7 +3,12 @@ from .position import Position
 
 
 class Renderer:
-    """Render a maze as coloured ANSI terminal art."""
+    """Render maze cells, markers, and paths as ANSI terminal art.
+
+    Rendering uses a mutable text canvas so walls, the protected pattern,
+    entry and exit markers, and an optional solution can be layered before
+    the completed frame is printed.
+    """
     COLOR_CODES = {
         "BLACK": "90",
         "RED": "91",

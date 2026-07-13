@@ -4,7 +4,12 @@ from .position import Position
 
 
 class Maze:
-    """A grid maze with an untouchable, locked pattern."""
+    """Model a grid maze containing a protected visual pattern.
+
+    The grid owns every cell, validates entry and exit markers, and exposes
+    helpers for carving and traversing passages without opening protected
+    pattern cells.
+    """
 
     PATTERNS = {
         "42": (
@@ -143,7 +148,12 @@ class Maze:
         return unique_positions
 
     def required_corridor_positions(self) -> list[Position]:
-        """Return required playable cells and their immediate corridors."""
+        """Collect required playable cells and their immediate neighbours.
+
+        Returns:
+            Unique in-bounds positions needed to keep the corners and centre
+            connected to the playable corridor graph.
+        """
         positions: list[Position] = []
 
         for position in self.required_open_positions():
@@ -375,7 +385,14 @@ class Maze:
                         changed = True
 
     def _unlocked_neighbor_count(self, position: Position) -> int:
-        """Return how many adjacent cells are available as corridors."""
+        """Count adjacent cells available for use as corridors.
+
+        Args:
+            position: Cell whose orthogonal neighbours will be inspected.
+
+        Returns:
+            Number of in-bounds neighbours outside the protected pattern.
+        """
         count = 0
 
         for direction in Direction:
@@ -434,7 +451,16 @@ class Maze:
         start_row: int,
         start_col: int,
     ) -> bool:
-        """Return whether required cells stay open corridor candidates."""
+        """Check whether a pattern placement preserves required corridors.
+
+        Args:
+            start_row: Top row of the candidate pattern placement.
+            start_col: Left column of the candidate pattern placement.
+
+        Returns:
+            ``True`` when required cells remain unlocked with enough available
+            neighbours to form corridors.
+        """
         pattern_positions = self._pattern_positions(start_row, start_col)
 
         for position in self.required_open_positions():
@@ -460,7 +486,15 @@ class Maze:
         start_row: int,
         start_col: int,
     ) -> int:
-        """Return how many required open cells a pattern would lock."""
+        """Count required open cells covered by a pattern placement.
+
+        Args:
+            start_row: Top row of the candidate pattern placement.
+            start_col: Left column of the candidate pattern placement.
+
+        Returns:
+            Number of required playable positions the pattern would lock.
+        """
         required_positions = set(self.required_open_positions())
         overlap_count = 0
 
@@ -474,7 +508,15 @@ class Maze:
         start_row: int,
         start_col: int,
     ) -> set[Position]:
-        """Return positions occupied by the selected pattern at an origin."""
+        """Build the occupied positions for a pattern placement.
+
+        Args:
+            start_row: Top row at which to place the selected pattern.
+            start_col: Left column at which to place the selected pattern.
+
+        Returns:
+            Positions corresponding to marked cells in the selected pattern.
+        """
         positions: set[Position] = set()
 
         for pattern_row, line in enumerate(self.pattern):

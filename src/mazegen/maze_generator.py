@@ -8,7 +8,12 @@ sys.setrecursionlimit(20000)
 
 
 class MazeGenerator:
-    """Generate perfect or imperfect mazes while preserving locked cells."""
+    """Generate maze passages while preserving protected pattern cells.
+
+    A depth-first traversal creates the initial perfect maze. Optional
+    post-processing adds loops and removes dead ends to create the default
+    Pac-Man-like playable board.
+    """
 
     _MAX_ROOM_SHAPES = ((2, 4), (3, 3), (4, 2))
     _MIN_PLAYABLE_LOOPS = 2
@@ -266,11 +271,26 @@ class MazeGenerator:
         maze: Maze,
         position: Position,
     ) -> int:
-        """Return the number of open passages from a cell."""
+        """Count the open passages connected to a cell.
+
+        Args:
+            maze: Maze containing the cell and its carved passages.
+            position: Position of the cell to inspect.
+
+        Returns:
+            Number of directly reachable neighbouring cells.
+        """
         return len(maze.get_reachable_neighbors(position))
 
     def _unlocked_positions(self, maze: Maze) -> list[Position]:
-        """Return all cells that are not part of the protected pattern."""
+        """Collect positions outside the protected pattern.
+
+        Args:
+            maze: Maze whose cells will be inspected.
+
+        Returns:
+            Every position that remains available for maze passages.
+        """
         positions: list[Position] = []
 
         for row in range(maze.rows):
@@ -281,7 +301,14 @@ class MazeGenerator:
         return positions
 
     def _dead_ends(self, maze: Maze) -> list[Position]:
-        """Return unlocked cells with only one open passage."""
+        """Find unlocked cells with only one open passage.
+
+        Args:
+            maze: Carved maze to inspect.
+
+        Returns:
+            Positions whose passage degree is exactly one.
+        """
         return [
             position
             for position in self._unlocked_positions(maze)
@@ -324,7 +351,15 @@ class MazeGenerator:
         return edge_count - len(positions) + components
 
     def _open_required_corridors(self, maze: Maze) -> None:
-        """Ensure required playable-board cells are open corridors."""
+        """Open enough walls around required playable-board cells.
+
+        Args:
+            maze: Maze to modify in place.
+
+        Raises:
+            ValueError: If a required playable cell belongs to the protected
+                pattern.
+        """
         for position in maze.required_open_positions():
             if maze.get_cell(position).locked_42:
                 raise ValueError("required playable-board cell is locked")
@@ -354,7 +389,14 @@ class MazeGenerator:
                     break
 
     def _open_extra_loops(self, maze: Maze) -> None:
-        """Add enough independent loops for default playable-board mode."""
+        """Add the minimum independent loops required by playable mode.
+
+        Args:
+            maze: Maze to modify in place.
+
+        Candidate walls are shuffled before opening so seeded generation stays
+        reproducible without producing the same structure for every seed.
+        """
         candidates: list[tuple[Position, Position]] = []
 
         for row in range(maze.rows):
@@ -383,7 +425,14 @@ class MazeGenerator:
             self._try_remove_wall(maze, position, neighbor)
 
     def _braid_dead_ends(self, maze: Maze) -> None:
-        """Remove dead ends by opening safe neighbouring walls."""
+        """Remove dead ends by opening safe neighbouring walls.
+
+        Args:
+            maze: Maze to modify in place.
+
+        The process stops after two stalled rounds so layouts that cannot be
+        improved do not loop indefinitely.
+        """
         stalled_rounds = 0
         previous_dead_end_count = len(self._dead_ends(maze))
 
@@ -432,7 +481,15 @@ class MazeGenerator:
         self._open_required_corridors(maze)
 
     def _validate_playable_board_space(self, maze: Maze) -> None:
-        """Reject layouts that cannot satisfy the playable-board rules."""
+        """Validate that required cells can form playable corridors.
+
+        Args:
+            maze: Maze layout to validate.
+
+        Raises:
+            ValueError: If a required cell is locked or has fewer than two
+                available neighbours.
+        """
         for position in maze.required_open_positions():
             if maze.get_cell(position).locked_42:
                 raise ValueError("required playable-board cell is locked")

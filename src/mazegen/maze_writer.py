@@ -3,7 +3,11 @@ from .position import Position
 
 
 class MazeWriter:
-    """Serialize generated mazes in the required text-file format."""
+    """Serialize generated mazes in the subject's text-file format.
+
+    Each cell is written as one hexadecimal wall value, followed by the entry,
+    exit, and solved route in cardinal directions.
+    """
 
     def write_maze(
         self,

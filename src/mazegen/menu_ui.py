@@ -10,7 +10,11 @@ import os
 
 
 class Menu:
-    """Provide the interactive terminal interface for maze operations."""
+    """Coordinate the interactive terminal interface.
+
+    The menu generates mazes, controls solution rendering, updates display
+    colours, and saves the current maze on request.
+    """
     COLORS = [
         "BLACK",
         "RED",
