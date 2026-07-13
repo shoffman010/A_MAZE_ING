@@ -9,21 +9,21 @@ text configuration file, generates a maze, displays it in the terminal, and can
 save the result in the hexadecimal wall format required by the subject.
 
 The maze is built as a grid of cells. Each cell stores four wall flags: north,
-east, south, and west. A protected central pattern is kept closed so the visual
+east, south, and west. A protected pattern is kept closed so the visual
 rendering contains a visible `42`. The program can generate either a perfect
-maze, with exactly one route between cells, or an imperfect maze with a limited
-number of extra passages.
+maze, with exactly one route between cells and no loops, or a default playable
+board with multiple routes, open corners, an open centre, and no dead ends in
+the corridor graph.
 
 The project includes:
 
-- `a_maze_ing.py`: main entry point.
-- `config.py`: configuration parser and validator.
-- `maze.py`, `cell.py`, `position.py`, `direction.py`: maze data model.
-- `maze_generator.py`: reusable maze generation logic.
-- `maze_solver.py`: shortest-path solver.
-- `maze_writer.py`: output-file writer.
-- `renderer.py`: terminal renderer.
-- `menu_ui.py`: interactive menu.
+- `src/mazegen/`: installable application and reusable maze library.
+- `a_maze_ing.py`: backward-compatible launcher for the 42 subject command.
+- `config.txt`: default application configuration.
+- `tools/`: standalone output analysis and validation scripts.
+- `tests/`: pytest coverage for model behaviour, generated boards, and subject
+  constraints.
+- `pyproject.toml`: package metadata and build configuration.
 
 ## Instructions
 
@@ -62,6 +62,18 @@ Run lint and type checks:
 make lint
 ```
 
+Run the test suite:
+
+```sh
+make test
+```
+
+Check a saved maze with the subject analyser:
+
+```sh
+python3 tools/maze_analyzer.py maze.txt
+```
+
 Remove generated cache files:
 
 ```sh
@@ -88,10 +100,10 @@ Example:
 
 ```txt
 # Default A-Maze-ing configuration
-WIDTH=20
+WIDTH=30
 HEIGHT=20
 ENTRY=1,1
-EXIT=8,5
+EXIT=29,14
 OUTPUT_FILE=maze.txt
 PERFECT=False
 PATTERN=42
@@ -110,7 +122,7 @@ Mandatory keys:
 | `ENTRY` | `x,y` | Entry cell coordinates. |
 | `EXIT` | `x,y` | Exit cell coordinates. |
 | `OUTPUT_FILE` | Path | Destination file for the serialized maze. |
-| `PERFECT` | `True` or `False` | Whether the generated maze must have only one path. |
+| `PERFECT` | `True` or `False` | `True` generates a perfect maze. `False` generates a Pac-Man-like playable board. |
 
 Optional keys:
 
@@ -168,23 +180,30 @@ Reasons for choosing recursive backtracking:
 - It is easy to adapt for the required protected `42` cells by excluding locked
   cells from the neighbour list.
 
-When `PERFECT=False`, the generator adds a controlled number of extra passages
-after the first pass. These additions make the maze imperfect while avoiding
-oversized open rooms such as `3x3`, `2x4`, or `4x2` empty rectangles.
+When `PERFECT=False`, the generator turns the DFS tree into a Pac-Man-like
+board. It opens the four corners and the centre as playable corridors, adds at
+least two independent loops, and braids dead ends by opening extra safe walls.
+Every extra opening is checked so it does not create oversized open rooms such
+as `3x3`, `2x4`, or `4x2` empty rectangles.
+
+The protected `42` pattern is placed as close to the centre as possible while
+keeping the four corners and the centre cell available as open corridors for
+the Pac-Man-like board. The code separates cells that are visibly part of the
+`42` from extra locked cells used only for generation, so pocket-filling cannot
+distort the rendered pattern. Cells that would otherwise become unavoidable
+pattern-created cul-de-sacs can still be absorbed into the closed area, keeping
+the playable corridor graph fully connected and dead-end free.
 
 ## Reusable Generator
 
-The reusable generation logic lives in `maze_generator.py` and is centered on
-the `MazeGenerator` class. It can be imported by another Python project together
-with the maze model and solver.
+The reusable generation logic lives in `src/mazegen/maze_generator.py` and is
+centered on the `MazeGenerator` class. Installing the project exposes the
+public classes through the `mazegen` package.
 
 Basic use:
 
 ```python
-from maze import Maze
-from maze_generator import MazeGenerator
-from maze_solver import MazeSolver
-from position import Position
+from mazegen import Maze, MazeGenerator, MazeSolver, Position
 
 maze = Maze(
     rows=20,
@@ -232,20 +251,19 @@ need to match the serialized output format; `MazeWriter` converts it when saving
 ### Packaged Reusable Module
 
 The reusable code is packaged as a Python distribution named `mazegen`. The
-package build creates root-level files named like `mazegen-1.0.0.tar.gz` and
-`mazegen-1.0.0-py3-none-any.whl`.
+package build creates a source archive and wheel under the ignored `dist/`
+directory.
 
 Build the package from the repository root:
 
 ```sh
-make install
 make package
 ```
 
 Install one generated artifact in another virtual environment:
 
 ```sh
-python3 -m pip install mazegen-1.0.0-py3-none-any.whl
+python3 -m pip install dist/mazegen-2.2.0-py3-none-any.whl
 ```
 
 Then use the reusable API:
@@ -270,11 +288,12 @@ print(maze.get_cell(Position(0, 0)).hex_value)
 
 Packaging files:
 
-- `pyproject.toml` tells Python which build backend to use.
-- `setup.py` defines the `mazegen` distribution name, version, Python
-  requirement, and the reusable modules included in the package.
-- `mazegen.py` is the public import surface, so future projects can import the
-  reusable classes from one module instead of knowing the internal file layout.
+- `pyproject.toml` defines the build backend, distribution metadata, package
+  discovery, Python requirement, and installed `maze-gen` command.
+- `src/mazegen/__init__.py` is the public import surface, so other projects do
+  not need to know the internal module layout.
+- `LICENSE.md` states the reuse and distribution permissions for future
+  projects that build on this generator.
 
 ## Visual Representation
 
@@ -293,11 +312,14 @@ Role:
   point for the maze data model.
 - `stehoffm`: terminal rendering and canvas creation, complete configuration
   parsing, protected pattern implementation, locking cells that belong to the
-  pattern, imperfect maze generation, `Makefile`, docstrings, packaging and README
-  documentation.
+  pattern, playable board generation, `Makefile`, docstrings, packaging and
+  README documentation.
 - `archowdh`: grid initialization, perfect maze generation with DFS/recursive
-  backtracking, shortest-path solver, and interactive menu options, terminal animation for solving part, different patterns for the locked cells.
-
+  backtracking, shortest-path solver, interactive menu options, terminal
+  animation for the solving part, and different patterns for the locked cells.
+- Shared v2.0 to v2.2 update work: both team members worked together on the
+  subject update from version 2.0 to version 2.2, including the Pac-Man board
+  constraints, analyzer checks, and final subject-aligned testing.
 
 Initial planning:
 
@@ -307,8 +329,8 @@ Initial planning:
 - Add grid initialization and recursive backtracking generation.
 - Add the protected `42` pattern and make sure its cells stay locked.
 - Add solving, rendering, menu interaction, and output serialization.
-- Add config validation, imperfect generation, linting support, docstrings, and
-  README updates.
+- Add config validation, playable board generation, linting support, docstrings,
+  and README updates.
 
 How the planning evolved:
 
@@ -317,9 +339,12 @@ How the planning evolved:
 - Optional display colours were added through config and the menu.
 - Reproducible seed support was kept separate from global randomness by using a
   dedicated random generator instance.
+- The v2.2 subject and analyser made the default mode requirements more
+  concrete: corners and centre must be reachable, at least two loops are
+  required, and no-dead-end boards are bonus-grade.
 - The work split became more focused as the project grew: `archowdh` worked
   mainly on generation, solving, grid setup, and menu flow, while `stehoffm`
-  worked mainly on parsing, rendering, pattern handling, imperfect mazes, and
+  worked mainly on parsing, rendering, pattern handling, playable boards, and
   project polish.
 
 What worked well:
@@ -327,14 +352,15 @@ What worked well:
 - Keeping cells responsible for their own hexadecimal wall encoding.
 - Keeping parsing and validation in `config.py`.
 - Using a separate solver to verify and display the shortest path.
+- Adding subject-level pytest checks at the end to compare generated output
+  against the same constraints reported by `tools/maze_analyzer.py`.
 
 What could be improved:
 
-- Add automated tests for config parsing, wall coherence, seed reproducibility,
-  and saved output.
 - Add broader package-install tests in a separate virtual environment.
-- Keep the mandatory `42` path as the default and document any alternate pattern
-  support as optional behaviour.
+- Keep alternate pattern support clearly documented as optional behaviour, with
+  the mandatory `42` pattern remaining the default.
+- Add more end-to-end tests around the interactive menu flow.
 
 Tools used:
 
@@ -343,6 +369,8 @@ Tools used:
 - `flake8` for style checks.
 - `mypy` for type checks.
 - Git for version control.
+- `pytest` for model, generation, output-format, and subject-constraint tests.
+- `tools/maze_analyzer.py` from the v2.2 subject for output validation.
 
 ## Resources
 
@@ -353,9 +381,15 @@ Classic references:
 - Wikipedia, "Depth-first search":
   <https://en.wikipedia.org/wiki/Depth-first_search>
 - BFS maze solver: <https://medium.com/@luthfisauqi17_68455/artificial-intelligence-search-problem-solve-maze-using-breadth-first-search-bfs-algorithm-255139c6e1a3>
+- MIT License reference:
+  <https://opensource.org/license/mit>
 
 AI use:
 
 - AI was used as a support tool for documentation wording,
   docstring improvements, and clarifying concepts such as the terminal canvas.
+- After the project was otherwise finished, AI was also used to help create
+  `tests/test_subject_constraints.py` as a final subject-aligned safety check
+  for config parsing, output format, maze constraints, and
+  `tools/maze_analyzer.py` verdicts.
 - Any AI suggestions were reviewed and adapted before being included.

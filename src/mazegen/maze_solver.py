@@ -1,11 +1,15 @@
 from collections import deque
 
-from maze import Maze
-from position import Position
+from .maze import Maze
+from .position import Position
 
 
 class MazeSolver:
-    """Find routes through carved maze passages."""
+    """Find the shortest route through carved maze passages.
+
+    The solver uses breadth-first search and only follows neighbouring cells
+    connected by open walls.
+    """
 
     def solve(
         self,

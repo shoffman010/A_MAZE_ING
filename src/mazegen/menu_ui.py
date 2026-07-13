@@ -1,16 +1,20 @@
-from config import Config
-from maze import Maze
-from maze_solver import MazeSolver
-from maze_generator import MazeGenerator
-from maze_writer import MazeWriter
-from position import Position
-from renderer import Renderer
+from .config import Config
+from .maze import Maze
+from .maze_generator import MazeGenerator
+from .maze_solver import MazeSolver
+from .maze_writer import MazeWriter
+from .position import Position
+from .renderer import Renderer
 import time
 import os
 
 
 class Menu:
-    """Provide the interactive terminal interface for maze operations."""
+    """Coordinate the interactive terminal interface.
+
+    The menu generates mazes, controls solution rendering, updates display
+    colours, and saves the current maze on request.
+    """
     COLORS = [
         "BLACK",
         "RED",

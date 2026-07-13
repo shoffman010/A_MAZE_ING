@@ -5,9 +5,9 @@ CONFIG := config.txt
 .PHONY: install run debug clean lint lint-strict test package
 
 install:
-	$(PYTHON) -c "import flake8, mypy, pytest, setuptools, wheel" || \
-		{ $(PYTHON) -m pip install flake8 mypy pytest setuptools wheel; \
-		$(PYTHON) -c "import flake8, mypy, pytest, setuptools, wheel"; }
+	$(PYTHON) -c "import build, flake8, mypy, pytest" || \
+		{ $(PYTHON) -m pip install build flake8 mypy pytest; \
+		$(PYTHON) -c "import build, flake8, mypy, pytest"; }
 
 run:
 	$(PYTHON) $(MAIN) $(CONFIG)
@@ -16,7 +16,9 @@ debug:
 	$(PYTHON) -m pdb $(MAIN) $(CONFIG)
 
 clean:
-	rm -rf __pycache__ .mypy_cache .pytest_cache .ruff_cache htmlcov .coverage
+	find . -type d -name '__pycache__' -prune -exec rm -rf {} +
+	find . -type d -name '*.egg-info' -prune -exec rm -rf {} +
+	rm -rf .mypy_cache .pytest_cache .ruff_cache htmlcov .coverage build dist
 
 lint:
 	$(PYTHON) -m flake8 .
@@ -30,5 +32,4 @@ test:
 	$(PYTHON) -m pytest
 
 package:
-	$(PYTHON) setup.py sdist --dist-dir . bdist_wheel --dist-dir .
-	rm -rf build mazegen.egg-info
+	$(PYTHON) -m build

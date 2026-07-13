@@ -1,0 +1,13 @@
+__pycache__/
+.mypy_cache/
+.pytest_cache/
+.ruff_cache/
+build/
+dist/
+*.egg-info/
+htmlcov/
+.coverage
+*.pyc
+*.whl
+*.tar.gz
+maze.txt
