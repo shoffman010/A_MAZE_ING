@@ -6,13 +6,9 @@ from pathlib import Path
 
 import pytest
 
-import maze_analyzer
-from config import Config, load_config
-from maze import Maze
-from maze_generator import MazeGenerator
-from maze_solver import MazeSolver
-from maze_writer import MazeWriter
-from position import Position
+from mazegen import Maze, MazeGenerator, MazeSolver, MazeWriter, Position
+from mazegen.config import Config, load_config
+from tools import maze_analyzer
 
 
 def _build_maze(

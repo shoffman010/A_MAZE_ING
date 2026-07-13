@@ -1,8 +1,8 @@
 import random
 import sys
 
-from maze import Maze
-from position import Position
+from .maze import Maze
+from .position import Position
 
 sys.setrecursionlimit(20000)
 

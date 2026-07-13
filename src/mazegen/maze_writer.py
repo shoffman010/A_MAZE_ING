@@ -1,5 +1,5 @@
-from maze import Maze
-from position import Position
+from .maze import Maze
+from .position import Position
 
 
 class MazeWriter:

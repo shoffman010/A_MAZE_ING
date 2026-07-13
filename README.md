@@ -17,17 +17,13 @@ the corridor graph.
 
 The project includes:
 
-- `a_maze_ing.py`: main entry point.
-- `config.py`: configuration parser and validator.
-- `maze.py`, `cell.py`, `position.py`, `direction.py`: maze data model.
-- `maze_generator.py`: reusable maze generation logic.
-- `maze_solver.py`: shortest-path solver.
-- `maze_writer.py`: output-file writer.
-- `renderer.py`: terminal renderer.
-- `menu_ui.py`: interactive menu.
-- `maze_analyzer.py`: subject-provided output analyser used for final checks.
+- `src/mazegen/`: installable application and reusable maze library.
+- `a_maze_ing.py`: backward-compatible launcher for the 42 subject command.
+- `config.txt`: default application configuration.
+- `tools/`: standalone output analysis and validation scripts.
 - `tests/`: pytest coverage for model behaviour, generated boards, and subject
   constraints.
+- `pyproject.toml`: package metadata and build configuration.
 
 ## Instructions
 
@@ -75,7 +71,7 @@ make test
 Check a saved maze with the subject analyser:
 
 ```sh
-python3 maze_analyzer.py maze.txt
+python3 tools/maze_analyzer.py maze.txt
 ```
 
 Remove generated cache files:
@@ -200,17 +196,14 @@ the playable corridor graph fully connected and dead-end free.
 
 ## Reusable Generator
 
-The reusable generation logic lives in `maze_generator.py` and is centered on
-the `MazeGenerator` class. It can be imported by another Python project together
-with the maze model and solver.
+The reusable generation logic lives in `src/mazegen/maze_generator.py` and is
+centered on the `MazeGenerator` class. Installing the project exposes the
+public classes through the `mazegen` package.
 
 Basic use:
 
 ```python
-from maze import Maze
-from maze_generator import MazeGenerator
-from maze_solver import MazeSolver
-from position import Position
+from mazegen import Maze, MazeGenerator, MazeSolver, Position
 
 maze = Maze(
     rows=20,
@@ -258,20 +251,19 @@ need to match the serialized output format; `MazeWriter` converts it when saving
 ### Packaged Reusable Module
 
 The reusable code is packaged as a Python distribution named `mazegen`. The
-package build creates root-level files named like `mazegen-1.0.0.tar.gz` and
-`mazegen-1.0.0-py3-none-any.whl`.
+package build creates a source archive and wheel under the ignored `dist/`
+directory.
 
 Build the package from the repository root:
 
 ```sh
-make install
 make package
 ```
 
 Install one generated artifact in another virtual environment:
 
 ```sh
-python3 -m pip install mazegen-1.0.0-py3-none-any.whl
+python3 -m pip install dist/mazegen-2.2.0-py3-none-any.whl
 ```
 
 Then use the reusable API:
@@ -296,11 +288,10 @@ print(maze.get_cell(Position(0, 0)).hex_value)
 
 Packaging files:
 
-- `pyproject.toml` tells Python which build backend to use.
-- `setup.py` defines the `mazegen` distribution name, version, Python
-  requirement, and the reusable modules included in the package.
-- `mazegen.py` is the public import surface, so future projects can import the
-  reusable classes from one module instead of knowing the internal file layout.
+- `pyproject.toml` defines the build backend, distribution metadata, package
+  discovery, Python requirement, and installed `maze-gen` command.
+- `src/mazegen/__init__.py` is the public import surface, so other projects do
+  not need to know the internal module layout.
 - `LICENSE.md` states the reuse and distribution permissions for future
   projects that build on this generator.
 
@@ -362,7 +353,7 @@ What worked well:
 - Keeping parsing and validation in `config.py`.
 - Using a separate solver to verify and display the shortest path.
 - Adding subject-level pytest checks at the end to compare generated output
-  against the same constraints reported by `maze_analyzer.py`.
+  against the same constraints reported by `tools/maze_analyzer.py`.
 
 What could be improved:
 
@@ -379,7 +370,7 @@ Tools used:
 - `mypy` for type checks.
 - Git for version control.
 - `pytest` for model, generation, output-format, and subject-constraint tests.
-- `maze_analyzer.py` from the v2.2 subject for output validation.
+- `tools/maze_analyzer.py` from the v2.2 subject for output validation.
 
 ## Resources
 
@@ -399,6 +390,6 @@ AI use:
   docstring improvements, and clarifying concepts such as the terminal canvas.
 - After the project was otherwise finished, AI was also used to help create
   `tests/test_subject_constraints.py` as a final subject-aligned safety check
-  for config parsing, output format, maze constraints, and `maze_analyzer.py`
-  verdicts.
+  for config parsing, output format, maze constraints, and
+  `tools/maze_analyzer.py` verdicts.
 - Any AI suggestions were reviewed and adapted before being included.

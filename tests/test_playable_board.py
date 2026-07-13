@@ -1,8 +1,6 @@
 """Tests for generated maze graph properties in both generation modes."""
 
-from maze import Maze
-from maze_generator import MazeGenerator
-from position import Position
+from mazegen import Maze, MazeGenerator, Position
 
 
 def _graph_stats(maze: Maze) -> tuple[int, int, int]:

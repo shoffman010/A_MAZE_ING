@@ -8,3 +8,6 @@ dist/
 htmlcov/
 .coverage
 *.pyc
+*.whl
+*.tar.gz
+maze.txt

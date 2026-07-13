@@ -1,6 +1,6 @@
-from cell import Cell
-from position import Position
-from direction import Direction
+from .cell import Cell
+from .direction import Direction
+from .position import Position
 
 
 class Maze:

@@ -2,10 +2,7 @@
 
 import pytest
 
-from cell import Cell
-from direction import Direction
-from maze import Maze
-from position import Position
+from mazegen import Cell, Direction, Maze, Position
 
 
 @pytest.mark.parametrize(
