@@ -16,7 +16,9 @@ debug:
 	$(PYTHON) -m pdb $(MAIN) $(CONFIG)
 
 clean:
-	rm -rf __pycache__ .mypy_cache .pytest_cache .ruff_cache htmlcov .coverage build dist *.egg-info
+	find . -type d -name '__pycache__' -prune -exec rm -rf {} +
+	find . -type d -name '*.egg-info' -prune -exec rm -rf {} +
+	rm -rf .mypy_cache .pytest_cache .ruff_cache htmlcov .coverage build dist
 
 lint:
 	$(PYTHON) -m flake8 .
