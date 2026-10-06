@@ -41,7 +41,6 @@ class Renderer:
             protected pattern, respectively.
         """
         self.WALL = self._colorize("██", wall_color)
-        # self.PATH = self._colorize("••", path_color)
         self.PATH = self._colorize("░░", path_color)
         self.PATTERN = self._colorize("██", pattern_color)
 
@@ -207,7 +206,6 @@ class Renderer:
         marker : str
             Rendered marker text.
         """
-        # row, col = position
         canvas_row = position.row * 2 + 1
         canvas_col = position.col * 2 + 1
         canvas[canvas_row][canvas_col] = marker

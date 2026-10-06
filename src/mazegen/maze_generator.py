@@ -26,8 +26,6 @@ class MazeGenerator:
         seed : int or None, optional
             Seed for random choices. ``None`` uses system-provided randomness.
         """
-        # Random(None) gets fresh system-provided randomness; a numeric seed
-        # makes every random choice in this generator reproducible.
         self._random = random.Random(seed)
 
     def generate(
@@ -102,11 +100,7 @@ class MazeGenerator:
             position,
         )
 
-        # print(position, [str(n) for n in neighbors],)
-
         self._random.shuffle(neighbors)
-
-        # print("after:", [str(n) for n in neighbors],)
 
         for neighbor in neighbors:
 

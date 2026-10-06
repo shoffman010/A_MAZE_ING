@@ -45,10 +45,7 @@ class Menu:
     ) -> None:
 
         for index in range(1, len(path) + 1):
-
-            # print("\033[2J\033[H", end="")
             print("\033[H", end="")
-            # os.system("cls" if os.name == "nt" else "clear")
 
             renderer.render(
                 maze,
@@ -137,9 +134,7 @@ class Menu:
             )
 
             if redraw_screen:
-                # print("\033[2J\033[H", end="")
                 os.system("cls" if os.name == "nt" else "clear")
-                # print("\033[H", end="")
 
                 if show:
                     solver = MazeSolver()

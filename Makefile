@@ -2,7 +2,10 @@ PYTHON := python3
 MAIN := a_maze_ing.py
 CONFIG := config.txt
 
-.PHONY: install run debug clean lint lint-strict test package
+.DEFAULT_GOAL := all
+.PHONY: all install run debug clean lint lint-strict test package
+
+all: install
 
 install:
 	$(PYTHON) -c "import build, flake8, mypy, pytest" || \

@@ -212,12 +212,6 @@ class Maze:
 
         neighbors: list[Position] = []
 
-        # adjust_position = [
-        #     (-1, 0),
-        #     (1, 0),
-        #     (0, -1),
-        #     (0, 1)
-        # ]
         for direction in Direction:
             new_neighbor = position.move(direction)
             if (
@@ -530,48 +524,6 @@ class Maze:
                     )
 
         return positions
-
-    # def _lock_42_pattern(self) -> None:
-    #     pattern_cells = self._scaled_42_pattern()
-
-    #     pattern_height = len(pattern_cells)
-    #     pattern_width = len(pattern_cells[0])
-    #     start_row = (self.rows - pattern_height) // 2
-    #     start_col = (self.cols - pattern_width) // 2
-
-    #     for pattern_row, line in enumerate(pattern_cells):
-    #         for pattern_col, mark in enumerate(line):
-    #             if mark != "#":
-    #                 continue
-
-    #             row = start_row + pattern_row
-    #             col = start_col + pattern_col
-    #             self.grid[row][col].locked_42 = True
-
-    # def _scaled_42_pattern(self) -> tuple[str, ...]:
-    #     base_height = len(self.PATTERN_42)
-    #     base_width = max(len(row) for row in self.PATTERN_42)
-
-    #     if self.rows < base_height or self.cols < base_width:
-    #         raise ValueError(
-    #             "maze is too small for the 42 pattern: "
-    #             f"minimum size is {base_width}x{base_height}"
-    #         )
-
-    #     row_margin = 2 if self.rows > base_height + 2 else 0
-    #     col_margin = 2 if self.cols > base_width + 2 else 0
-    #     scale = min(
-    #         max(1, (self.rows - row_margin) // base_height),
-    #         max(1, (self.cols - col_margin) // base_width),
-    #     )
-
-    #     scaled_rows: list[str] = []
-    #     for row in self.PATTERN_42:
-    #         padded_row = row.ljust(base_width)
-    #         scaled_row = "".join(mark * scale for mark in padded_row)
-    #         scaled_rows.extend([scaled_row] * scale)
-
-    #     return tuple(scaled_rows)
 
     def _validated_marker(
         self,
