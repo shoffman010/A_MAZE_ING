@@ -9,10 +9,12 @@ The project models a maze as a **grid graph**. It combines randomized depth-firs
 <p align="center">
   <img
     src="docs/maze-demo.gif"
-    alt="Animated A-Maze-ing demo showing maze generation and interaction"
+    alt="A-Maze-ing solver tracing a path from entry to exit around the protected 42 pattern"
     width="800"
   >
 </p>
+
+The demo shows the solver tracing the shortest path from entry (`EN`) to exit (`EX`), around the protected `42` pattern.
 
 ## Highlights
 
