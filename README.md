@@ -145,11 +145,11 @@ The project uses `pytest` for testing, `mypy` for static type checking, and `fla
 
 ## Team & Contributions
 
-Developed collaboratively by **stehoffm010** and **Arunima1005**.
+Developed collaboratively by **shoffman010** and **Arunima1005**.
 
 | Contributor | Primary responsibilities |
 |---|---|
-| **stehoffm010** — [GitHub](https://github.com/shoffman010) | Configuration parsing and validation, terminal rendering, protected patterns, playable-board generation, graph post-processing, packaging, and development tooling |
+| **shoffman010** — [GitHub](https://github.com/shoffman010) | Configuration parsing and validation, terminal rendering, protected patterns, playable-board generation, graph post-processing, packaging, and development tooling |
 | **Arunima1005** — [GitHub](https://github.com/Arunima1005) | Grid initialization, randomized DFS generation, BFS solver, interactive menu, solution animation, and alternative locked-cell patterns |
 
 **Shared responsibilities:** Initial `Cell` model, architectural decisions, migration from subject v2.0 to v2.2, playable-board constraints, analyser integration, and final testing.
